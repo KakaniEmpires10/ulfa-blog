@@ -1,0 +1,294 @@
+.admin-shell {
+  --ck-custom-soft-surface: color-mix(in srgb, var(--bulma-scheme-main) 88%, var(--bulma-primary) 12%);
+  --ck-custom-soft-surface-strong: color-mix(in srgb, var(--bulma-scheme-main) 80%, var(--bulma-primary) 20%);
+  --ck-custom-soft-border: color-mix(in srgb, var(--bulma-border) 78%, var(--bulma-primary) 22%);
+  --ck-custom-soft-hover: color-mix(in srgb, var(--bulma-scheme-main) 72%, var(--bulma-primary) 28%);
+  --ck-custom-soft-accent: color-mix(in srgb, var(--bulma-primary) 14%, var(--bulma-scheme-main) 86%);
+  --ck-custom-soft-accent-strong: color-mix(in srgb, var(--bulma-primary) 22%, var(--bulma-scheme-main) 78%);
+
+  --ck-color-base-background: var(--ck-custom-soft-surface);
+  --ck-color-base-border: var(--ck-custom-soft-border);
+  --ck-color-base-text: var(--bulma-text);
+  --ck-color-text: var(--bulma-text);
+  --ck-color-toolbar-background: var(--ck-custom-soft-surface);
+  --ck-color-toolbar-border: var(--ck-custom-soft-border);
+  --ck-color-dropdown-panel-background: var(--bulma-scheme-main);
+  --ck-color-dropdown-panel-border: var(--ck-custom-soft-border);
+  --ck-color-panel-background: var(--bulma-scheme-main);
+  --ck-color-panel-border: var(--ck-custom-soft-border);
+  --ck-color-dialog-background: var(--bulma-scheme-main);
+  --ck-color-dialog-form-header-border: var(--ck-custom-soft-border);
+  --ck-color-input-background: var(--bulma-scheme-main);
+  --ck-color-input-border: var(--ck-custom-soft-border);
+  --ck-color-input-text: var(--bulma-text);
+  --ck-color-input-disabled-background: color-mix(in srgb, var(--bulma-scheme-main) 92%, var(--bulma-border) 8%);
+  --ck-color-input-disabled-border: var(--bulma-border-weak);
+  --ck-color-input-disabled-text: var(--bulma-text-weak);
+  --ck-color-list-background: var(--bulma-scheme-main);
+  --ck-color-button-default-hover-background: var(--ck-custom-soft-hover);
+  --ck-color-button-default-active-background: var(--ck-custom-soft-accent);
+  --ck-color-button-on-background: var(--ck-custom-soft-accent);
+  --ck-color-button-on-hover-background: var(--ck-custom-soft-accent-strong);
+  --ck-color-button-on-active-background: var(--ck-custom-soft-accent-strong);
+  --ck-color-button-on-color: var(--bulma-primary);
+  --ck-color-list-button-hover-background: var(--ck-custom-soft-hover);
+  --ck-color-list-button-on-background: var(--bulma-primary);
+  --ck-color-list-button-on-text: var(--bulma-primary-invert);
+  --ck-color-focus-border: var(--bulma-primary);
+  --ck-color-focus-outer-shadow: color-mix(in srgb, var(--bulma-primary) 18%, transparent);
+  --ck-color-link-default: var(--bulma-link);
+  --ck-content-font-family: var(--bulma-family-primary);
+  --ck-content-font-size: 1rem;
+  --ck-content-line-height: 1.75;
+  --ck-content-font-color: var(--bulma-text);
+  --ck-content-color-image-caption-background: color-mix(in srgb, var(--bulma-scheme-main) 88%, var(--bulma-primary) 12%);
+  --ck-content-color-image-caption-text: var(--bulma-text-weak);
+  --ck-content-highlight-marker-yellow: color-mix(in srgb, var(--bulma-warning) 34%, var(--bulma-scheme-main) 66%);
+  --ck-content-highlight-marker-green: color-mix(in srgb, var(--bulma-success) 24%, var(--bulma-scheme-main) 76%);
+  --ck-content-highlight-marker-pink: color-mix(in srgb, var(--bulma-danger) 22%, var(--bulma-scheme-main) 78%);
+  --ck-content-highlight-marker-blue: color-mix(in srgb, var(--bulma-info) 24%, var(--bulma-scheme-main) 76%);
+  --ck-content-highlight-pen-red: color-mix(in srgb, var(--bulma-danger) 84%, var(--bulma-text) 16%);
+  --ck-content-highlight-pen-green: color-mix(in srgb, var(--bulma-success) 84%, var(--bulma-text) 16%);
+}
+
+.blog-editor-shell {
+  position: relative;
+}
+
+.blog-editor-shell .ck.ck-editor {
+  border-radius: var(--bulma-radius-medium);
+}
+
+.blog-editor-shell .ck.ck-toolbar {
+  border: 1px solid var(--ck-color-toolbar-border);
+  border-radius: var(--bulma-radius-medium) var(--bulma-radius-medium) 0 0;
+}
+
+.blog-editor-shell .ck.ck-editor__main > .ck-editor__editable_inline {
+  background: var(--bulma-scheme-main);
+  border: 1px solid var(--ck-color-base-border);
+  border-radius: 0 0 var(--bulma-radius-medium) var(--bulma-radius-medium);
+  border-top: 0;
+  min-height: 26rem;
+  padding: 1.25rem;
+}
+
+.blog-editor-shell .ck.ck-editor__main > .ck-editor__editable_inline.ck-focused {
+  border-color: var(--bulma-primary);
+  box-shadow: 0 0 0 0.125rem color-mix(in srgb, var(--bulma-primary) 18%, transparent);
+}
+
+.blog-editor-shell .ck.ck-toolbar .ck-button.ck-on {
+  color: var(--bulma-primary);
+}
+
+.blog-editor-shell .ck.ck-toolbar .ck-button:not(.ck-disabled):hover,
+.blog-editor-shell .ck.ck-toolbar .ck-button:not(.ck-disabled):focus {
+  box-shadow: none;
+}
+
+.blog-editor-shell .ck.ck-dropdown__panel,
+.blog-editor-shell .ck.ck-balloon-panel,
+.blog-editor-shell .ck.ck-dialog {
+  border-radius: var(--bulma-radius-medium);
+}
+
+.ck-content {
+  color: var(--ck-content-font-color);
+  font-family: var(--ck-content-font-family);
+  font-size: var(--ck-content-font-size);
+  line-height: var(--ck-content-line-height);
+}
+
+.ck-content > :first-child {
+  margin-top: 0;
+}
+
+.ck-content > :last-child {
+  margin-bottom: 0;
+}
+
+.ck-content h1,
+.ck-content h2,
+.ck-content h3 {
+  color: var(--bulma-text-strong);
+  font-family: var(--bulma-family-secondary);
+  line-height: 1.25;
+  margin-bottom: 0.75rem;
+}
+
+.ck-content h1 {
+  font-size: 2rem;
+}
+
+.ck-content h2 {
+  font-size: 1.625rem;
+}
+
+.ck-content h3 {
+  font-size: 1.25rem;
+}
+
+.ck-content p,
+.ck-content ul,
+.ck-content ol,
+.ck-content blockquote,
+.ck-content pre,
+.ck-content .image,
+.ck-content .table {
+  margin-bottom: 1.25rem;
+}
+
+.ck-content ul,
+.ck-content ol {
+  margin-left: 1.5rem;
+}
+
+.ck-content a {
+  color: var(--bulma-link);
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+}
+
+.ck-content blockquote {
+  background: color-mix(in srgb, var(--bulma-scheme-main) 88%, var(--bulma-primary) 12%);
+  border-left: 4px solid var(--bulma-primary);
+  border-radius: var(--bulma-radius-medium);
+  color: var(--bulma-text-strong);
+  display: flex;
+  align-items: center;
+  font-style: normal;
+  margin-left: 0;
+  margin-right: 0;
+  min-height: 7.5rem;
+  padding: 1.15rem 1.35rem;
+}
+
+.ck-content blockquote > * {
+  margin-bottom: 0;
+  margin-top: 0;
+  width: 100%;
+}
+
+.ck-content blockquote p {
+  font-size: 1.15rem;
+  font-style: italic;
+  line-height: 1.85;
+}
+
+.ck-content code {
+  background: color-mix(in srgb, var(--bulma-scheme-main) 82%, var(--bulma-primary) 18%);
+  border-radius: var(--bulma-radius-small);
+  color: var(--bulma-text-strong);
+  padding: 0.15em 0.35em;
+}
+
+.ck-content pre {
+  background: color-mix(in srgb, var(--bulma-scheme-main) 92%, var(--bulma-primary) 8%);
+  border: 1px solid var(--bulma-border);
+  border-radius: var(--bulma-radius-medium);
+  color: var(--bulma-text);
+  padding: 1rem 1.1rem;
+}
+
+.ck-content pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.ck-content hr {
+  background: color-mix(in srgb, var(--bulma-border) 66%, var(--bulma-primary) 34%);
+  border: 0;
+  border-radius: 999px;
+  height: 0.3rem;
+  margin: 2rem 0;
+}
+
+.ck-content .image img {
+  border-radius: var(--bulma-radius-medium);
+}
+
+.ck-content .image > figcaption {
+  border: 1px solid color-mix(in srgb, var(--bulma-border) 74%, var(--bulma-primary) 26%);
+  border-radius: 0 0 var(--bulma-radius-medium) var(--bulma-radius-medium);
+  border-top: 0;
+  color: var(--ck-content-color-image-caption-text);
+}
+
+.ck-content .image > img + figcaption,
+.ck-content .image > picture + figcaption {
+  margin-top: 0;
+}
+
+.ck-content .marker-yellow,
+.ck-content .marker-green,
+.ck-content .marker-pink,
+.ck-content .marker-blue {
+  border-radius: var(--bulma-radius-small);
+  box-decoration-break: clone;
+  padding: 0.05em 0.2em;
+}
+
+.ck-content .pen-red,
+.ck-content .pen-green {
+  font-weight: 600;
+}
+
+.ck-content figure.table:not(.layout-table) > table,
+.ck-content table.table:not(.layout-table) {
+  border-color: color-mix(in srgb, var(--bulma-border) 72%, var(--bulma-primary) 28%);
+}
+
+.ck-content :is(table.table:not(.layout-table), figure.table:not(.layout-table) > table) :is(td, th) {
+  border-color: color-mix(in srgb, var(--bulma-border) 78%, var(--bulma-primary) 22%);
+}
+
+.ck-content :is(table.table:not(.layout-table), figure.table:not(.layout-table) > table) > :is(thead, tbody, tfoot) > tr > th {
+  background: color-mix(in srgb, var(--bulma-scheme-main) 84%, var(--bulma-primary) 16%);
+}
+
+.post-detail-content.ck-content {
+  --ck-content-font-color: var(--bulma-text);
+  --ck-content-color-image-caption-background: color-mix(in srgb, var(--bulma-scheme-main) 88%, var(--bulma-primary) 12%);
+  --ck-content-color-image-caption-text: var(--bulma-text-weak);
+  --ck-content-highlight-marker-yellow: color-mix(in srgb, var(--bulma-warning) 34%, var(--bulma-scheme-main) 66%);
+  --ck-content-highlight-marker-green: color-mix(in srgb, var(--bulma-success) 24%, var(--bulma-scheme-main) 76%);
+  --ck-content-highlight-marker-pink: color-mix(in srgb, var(--bulma-danger) 22%, var(--bulma-scheme-main) 78%);
+  --ck-content-highlight-marker-blue: color-mix(in srgb, var(--bulma-info) 24%, var(--bulma-scheme-main) 76%);
+  --ck-content-highlight-pen-red: color-mix(in srgb, var(--bulma-danger) 84%, var(--bulma-text) 16%);
+  --ck-content-highlight-pen-green: color-mix(in srgb, var(--bulma-success) 84%, var(--bulma-text) 16%);
+  color: var(--bulma-text);
+}
+
+.post-detail-content.ck-content .image,
+.post-detail-content.ck-content figure.table {
+  max-width: 100%;
+}
+
+.post-detail-content.ck-content .image img {
+  height: auto;
+}
+
+@media screen and (max-width: 768px) {
+  .blog-editor-shell .ck.ck-editor__main > .ck-editor__editable_inline {
+    min-height: 22rem;
+    padding: 1rem;
+  }
+
+  .ck-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .ck-content h2 {
+    font-size: 1.45rem;
+  }
+
+  .ck-content blockquote {
+    min-height: 6rem;
+  }
+
+  .ck-content blockquote p {
+    font-size: 1.05rem;
+  }
+}
