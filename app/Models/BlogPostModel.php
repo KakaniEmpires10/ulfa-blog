@@ -165,9 +165,11 @@ class BlogPostModel extends Model
         return $this->hydratePosts($builder->findAll());
     }
 
-    public function getPostBySlug(string $slug): ?array
+    public function getPostBySlug(string $slug, bool $includeDraft = false): ?array
     {
-        $post = $this->basePublicBuilder()
+        $builder = $includeDraft ? $this->basePostDetailBuilder() : $this->basePublicBuilder();
+
+        $post = $builder
             ->where('blog_posts.slug', $slug)
             ->first();
 
@@ -209,9 +211,7 @@ class BlogPostModel extends Model
 
     protected function basePublicBuilder(?string $categorySlug = null)
     {
-        $builder = $this->select('blog_posts.*, users.username AS author_username, COALESCE(user_profiles.display_name, users.username) AS author_name, user_profiles.avatar_path AS author_avatar')
-            ->join('users', 'users.id = blog_posts.author_id')
-            ->join('user_profiles', 'user_profiles.user_id = users.id', 'left')
+        $builder = $this->basePostDetailBuilder()
             ->where('blog_posts.status', 'published');
 
         if ($categorySlug !== null && $categorySlug !== '') {
@@ -222,6 +222,13 @@ class BlogPostModel extends Model
         }
 
         return $builder;
+    }
+
+    protected function basePostDetailBuilder()
+    {
+        return $this->select('blog_posts.*, users.username AS author_username, COALESCE(user_profiles.display_name, users.username) AS author_name, user_profiles.avatar_path AS author_avatar')
+            ->join('users', 'users.id = blog_posts.author_id')
+            ->join('user_profiles', 'user_profiles.user_id = users.id', 'left');
     }
 
     protected function hydratePosts(array $posts): array
@@ -281,7 +288,8 @@ class BlogPostModel extends Model
             $post['categories']      = $categoryMap[$post['id']] ?? [];
             $post['tags']            = $tagMap[$post['id']] ?? [];
             $post['primary_category'] = $post['categories'][0] ?? null;
-            $post['cover_url']       = $coverMap[$post['id']] ?? $post['cover_image'] ?? 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=80';
+            $coverPath               = $coverMap[$post['id']] ?? $post['cover_image'] ?? null;
+            $post['cover_url']       = $this->resolveAssetUrl($coverPath) ?? 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=80';
             $post['excerpt_display'] = excerpt_text($post['excerpt'] ?: $post['content'], 180);
             $post['reading_time']    = reading_time($post['content']);
             $post['seo_title_value'] = $post['seo_title'] ?: $post['title'];
@@ -290,5 +298,20 @@ class BlogPostModel extends Model
         unset($post);
 
         return $posts;
+    }
+
+    protected function resolveAssetUrl(?string $path): ?string
+    {
+        if ($path === null || trim($path) === '') {
+            return null;
+        }
+
+        $path = trim($path);
+
+        if (preg_match('#^(?:https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
+            return $path;
+        }
+
+        return base_url(ltrim($path, '/'));
     }
 }

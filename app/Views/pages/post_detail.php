@@ -14,10 +14,13 @@
             <div class="column is-8-desktop">
                 <article class="post-detail-card">
                     <header class="post-detail-header">
+                        <?php if (! empty($isPreview)) : ?>
+                            <span class="tag is-warning is-light is-rounded mb-3">Preview Draft</span>
+                        <?php endif; ?>
                         <?php if (! empty($post['primary_category'])) : ?>
                             <a class="script-label post-category-link" href="<?= category_filter_url($post['primary_category']['slug']) ?>"><?= esc($post['primary_category']['name']) ?></a>
                         <?php endif; ?>
-                        <h1 class="h2"><?= esc($post['title']) ?></h1>
+                        <h1 class="post-detail-title"><?= esc($post['title']) ?></h1>
                         <?= $this->setVar('post', $post)->include('components/post_meta') ?>
                     </header>
 

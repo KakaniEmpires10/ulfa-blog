@@ -312,15 +312,16 @@ a:not(.button):not(.button *):not(.tabs *):hover {
 }
 
 .tag-status-publish {
-        background-color: #e8f5e9 !important;
-        color: #2e7d32 !important;
-        border: 1px solid #c8e6c9;
-    }
-    .tag-status-draft {
-        background-color: #fff3e0 !important;
-        color: #ef6c00 !important;
-        border: 1px solid #ffe0b2;
-    }
+    background-color: #e8f5e9 !important;
+    color: #2e7d32 !important;
+    border: 1px solid #c8e6c9;
+}
+
+.tag-status-draft {
+    background-color: #fff3e0 !important;
+    color: #ef6c00 !important;
+    border: 1px solid #ffe0b2;
+}
 
 .script-label {
   color: var(--bulma-primary);
@@ -1068,8 +1069,28 @@ button.is-submitting .icon i {
   margin-bottom: 1.6rem;
 }
 
+.post-detail-title {
+  font-size: clamp(2.2rem, 4.4vw, 3.35rem);
+  line-height: 1.08;
+  margin-bottom: 0.9rem;
+}
+
 .post-detail-card {
   padding: 2rem;
+}
+
+.post-detail-cover {
+  overflow: hidden;
+}
+
+.post-detail-cover img {
+  border-radius: var(--bulma-radius-large);
+  display: block;
+  height: auto;
+  max-height: 34rem;
+  object-fit: cover;
+  object-position: center;
+  width: 100%;
 }
 
 .site-footer {

@@ -11,13 +11,21 @@ class PostController extends BaseController
     public function show(string $slug): string
     {
         $postModel = new BlogPostModel();
-        $post      = $postModel->getPostBySlug($slug);
+        $canPreviewDraft = auth()->loggedIn();
+        $post            = $postModel->getPostBySlug($slug, $canPreviewDraft);
 
         if ($post === null) {
             throw PageNotFoundException::forPageNotFound();
         }
 
-        $postModel->incrementViewCount((int) $post['id']);
+        $isPublished = strtolower((string) ($post['status'] ?? '')) === 'published';
+        if (!$isPublished && !$canPreviewDraft) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        if ($isPublished) {
+            $postModel->incrementViewCount((int) $post['id']);
+        }
 
         $profileModel = new UserProfileModel();
 
@@ -30,6 +38,7 @@ class PostController extends BaseController
             'recentPosts'       => $postModel->getRecentPostsByAuthor((int) $post['author_id'], 3, (int) $post['id']),
             'popularPosts'      => $postModel->getPopularPosts(4, (int) $post['id']),
             'sidebarCategories' => $postModel->getSidebarCategories(),
+            'isPreview'         => !$isPublished,
         ]);
     }
 }
