@@ -9,7 +9,7 @@
         <li class="<?= url_is('admin/settings/image-profile') ? 'is-active' : '' ?>">
             <a href="<?= site_url('/admin/settings/image-profile') ?>">
                 <span class="icon is-small"><i class="fas fa-image" aria-hidden="true"></i></span>
-                <span>Pengaturan Logo</span>
+                <span>Pengaturan Gambar</span>
             </a>
         </li>
         <li class="<?= url_is('admin/settings/profile') ? 'is-active' : '' ?>">

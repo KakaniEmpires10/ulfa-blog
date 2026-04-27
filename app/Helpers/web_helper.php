@@ -228,7 +228,7 @@ if (!function_exists('render_cover_url')) {
     function render_cover_url($coverPath)
     {
         if (empty($coverPath)) {
-            return base_url('assets/images/default-cover.jpg');
+            return 'https://placehold.net/800x600.png';
         }
 
         if (preg_match('/^https?:\/\//', $coverPath)) {
@@ -293,13 +293,13 @@ if (! function_exists('admin_nav_items')) {
                 'icon'        => 'fa-solid fa-tags',
                 'description' => 'Tambahkan penanda kecil untuk pencarian cepat.',
             ],
-            [
-                'label'       => 'Media',
-                'path'        => 'admin/media',
-                'url'         => site_url('/admin/media'),
-                'icon'        => 'fa-regular fa-images',
-                'description' => 'Kelola gambar dan aset visual blog.',
-            ],
+            // [
+            //     'label'       => 'Media',
+            //     'path'        => 'admin/media',
+            //     'url'         => site_url('/admin/media'),
+            //     'icon'        => 'fa-regular fa-images',
+            //     'description' => 'Kelola gambar dan aset visual blog.',
+            // ],
             [
                 'label'       => 'Pengaturan',
                 'path'        => 'admin/settings',

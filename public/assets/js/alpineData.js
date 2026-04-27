@@ -400,6 +400,181 @@ document.addEventListener('alpine:init', () => {
     },
   }));
 
+  // Image upload handler for setting
+  Alpine.data("imageUploader", (config = {}) => ({
+    previewUrl: config.previewUrl || "",
+    originalUrl: config.originalUrl || "",
+    isExternal: config.isExternal || false,
+    isLoading: false,
+    uploadProgress: 0,
+    hasChanges: false,
+    fileName: "",
+
+    init() {
+      this.$watch("hasChanges", value => {
+        if (this.$refs.submitButton) {
+          this.$refs.submitButton.disabled = !value;
+        }
+      });
+    },
+
+    updatePreview(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      this.fileName = file.name;
+
+      if (file.size > 4 * 1024 * 1024) {
+        this.showNotification("warning", "Ukuran file maksimal 3 MB");
+        event.target.value = "";
+        return;
+      }
+
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+      if (!allowedTypes.includes(file.type)) {
+        this.showNotification(
+          "warning",
+          "Format file harus JPG, JPEG, atau PNG",
+        );
+        event.target.value = "";
+        return;
+      }
+
+      if (config.type === "profile") {
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = e => {
+          img.src = e.target.result;
+          img.onload = () => {
+            if (img.width !== img.height) {
+              if (
+                !confirm(
+                  `⚠️ Gambar tidak persegi (1:1). Dimensi saat ini: ${img.width}x${img.height}\nTetap menggunakan gambar ini?`,
+                )
+              ) {
+                event.target.value = "";
+                return;
+              }
+            }
+            this.previewUrl = URL.createObjectURL(file);
+            this.isExternal = false;
+            this.hasChanges = true;
+            this.uploadProgress = 0;
+          };
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.previewUrl = URL.createObjectURL(file);
+        this.isExternal = false;
+        this.hasChanges = true;
+        this.uploadProgress = 0;
+      }
+    },
+
+    resetImage() {
+      if (this.isExternal) {
+        this.previewUrl = this.originalUrl;
+      } else {
+        this.previewUrl = "";
+        this.originalUrl = "";
+      }
+      this.hasChanges = false;
+      this.uploadProgress = 0;
+      this.fileName = "";
+
+      // Reset file input
+      const fileInput = document.getElementById(config.inputId);
+      if (fileInput) fileInput.value = "";
+    },
+
+    async submitForm(event) {
+      event.preventDefault();
+
+      if (!this.hasChanges) return;
+
+      this.isLoading = true;
+      this.uploadProgress = 0;
+
+      const fileInput = document.getElementById(config.inputId);
+
+      if (!fileInput?.files?.[0]) {
+        this.showNotification("warning", "Pilih file gambar terlebih dahulu");
+        this.isLoading = false;
+        return;
+      }
+
+      const formData = new FormData(event.target);
+      const xhr = new XMLHttpRequest();
+
+      // ─── Progress ───────────────────────────────────────────────
+      xhr.upload.addEventListener("progress", e => {
+        if (e.lengthComputable) {
+          this.uploadProgress = Math.round((e.loaded / e.total) * 100);
+        }
+      });
+
+      // ─── Response ───────────────────────────────────────────────
+      xhr.onload = () => {
+        try {
+          const res = JSON.parse(xhr.responseText);
+
+          if (res.status === "success") {
+            // Tampilkan notifikasi dulu, baru redirect
+            this.showNotification("success", res.message);
+            setTimeout(() => {
+              window.location.href = res.redirect;
+            }, 1200);
+          } else {
+            this.isLoading = false;
+            this.uploadProgress = 0;
+            this.showNotification(
+              "error",
+              res.message ?? "Terjadi kesalahan saat upload",
+            );
+          }
+        } catch {
+          // Bukan JSON — redirect biasa (fallback)
+          window.location.reload();
+        }
+      };
+
+      xhr.onerror = () => {
+        this.isLoading = false;
+        this.uploadProgress = 0;
+        this.showNotification("error", "Terjadi kesalahan jaringan");
+      };
+
+      // Tandai sebagai XHR agar controller mengenalinya
+      xhr.open("POST", event.target.action);
+      xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+      xhr.send(formData);
+    },
+
+    showNotification(type, message) {
+      if (typeof ButterPop !== "undefined") {
+        ButterPop.show({
+          message,
+          type:
+            type === "success"
+              ? "success"
+              : type === "error"
+                ? "error"
+                : "warning",
+          position: "top-right",
+          theme: "gradient",
+          duration: 5000,
+          progress: true,
+          closable: true,
+          pauseOnHover: true,
+          closeOnClick: false,
+        });
+      } else {
+        alert(message);
+      }
+    }
+  }));
+
   Alpine.data('heroSlider', (total) => ({
     active: 0,
     total,

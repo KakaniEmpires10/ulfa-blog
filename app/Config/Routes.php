@@ -19,6 +19,7 @@ $routes->group('admin', [
     $routes->get('dashboard-data', 'DashboardController::data');
     $routes->get('media', 'PageController::media');
 
+    // upload image form rich text editor
     $routes->post('upload/image', 'AdminPostController::uploadImage', ['as' => 'upload_image']);
 
     // Post related settings
@@ -54,7 +55,9 @@ $routes->group('admin', [
 
         // Image Profile (admin/settings/image-profile)
         $routes->get('image-profile', 'SettingsController::imageProfile', ['as' => 'settings_image']);
-        $routes->post('image-profile', 'SettingsController::updateImageProfile', ['as' => 'settings_image_update']);
+        $routes->post('image-profile/update/cover', 'SettingsController::updateProfileCover', ['as' => 'settings_image_update_cover']);
+        // $routes->post('image-profile/update/logo', 'SettingsController::updateLogo', ['as' => 'settings_image_update_logo']);
+        $routes->post('image-profile/update/avatar', 'SettingsController::updateProfileAvatar', ['as' => 'settings_image_update_avatar']);
 
         // User Profile (admin/settings/profile)
         $routes->get('profile', 'SettingsController::profile', ['as' => 'settings_profile']);
