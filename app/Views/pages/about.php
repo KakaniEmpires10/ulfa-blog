@@ -19,12 +19,12 @@
             <?php endif; ?>
         </div>
 
-        <img src="<?= esc($profile['cover_image_path'] ?? $profile['avatar_path']) ?>" class="mb-4 is-100 rounded-theme author-cover" alt="<?= esc($profile['display_name'] ?? 'Penulis') ?>">
+        <img src="<?= render_cover_url(esc($profile['cover_image_path'] ?? $profile['avatar_path'])) ?>" class="mb-4 is-100 rounded-theme author-cover" alt="<?= esc($profile['display_name'] ?? 'Penulis') ?>">
 
         <div class="columns is-variable is-6">
             <div class="column is-4-desktop">
                 <div class="author-summary-card">
-                    <img src="<?= esc($profile['avatar_path']) ?>" alt="<?= esc($profile['display_name']) ?>">
+                    <img src="<?= render_cover_url(esc($profile['avatar_path'])) ?>" alt="<?= esc($profile['display_name']) ?>">
                     <h2><?= esc($profile['display_name']) ?></h2>
                     <div class="profile-divider"></div>
                     <p><?= esc($profile['bio']) ?></p>

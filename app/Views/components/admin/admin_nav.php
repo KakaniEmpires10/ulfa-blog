@@ -42,7 +42,7 @@
                     :aria-expanded="open">
 
                     <?php if (! empty($adminProfile['avatar_path'])) : ?>
-                        <img src="<?= esc($adminProfile['avatar_path']) ?>" alt="Avatar">
+                        <img src="<?= render_cover_url(esc($adminProfile['avatar_path'])) ?>" alt="Avatar">
                     <?php else : ?>
                         <span class="admin-user-avatar">
                             <i class="fa-regular fa-user" style="font-size: 0.75rem;"></i>

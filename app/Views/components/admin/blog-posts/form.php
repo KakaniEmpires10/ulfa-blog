@@ -49,8 +49,8 @@ $ckeditorScriptVersion = filemtime(FCPATH . 'assets/js/adminPostEditor.js');
                 </div>
 
                 <div class="field" x-data="{ 
-                    previewUrl: '<?= isset($post['cover_image']) ? base_url($post['cover_image']) : '' ?>',
-                    originalUrl: '<?= isset($post['cover_image']) ? base_url($post['cover_image']) : '' ?>',
+                    previewUrl: '<?= isset($post['cover_image']) ? render_cover_url($post['cover_image']) : '' ?>',
+                    originalUrl: '<?= isset($post['cover_image']) ? render_cover_url($post['cover_image']) : '' ?>',
                     updatePreview(event) {
                         const file = event.target.files[0];
                         if (file) {
