@@ -453,10 +453,10 @@ class AdminPostController extends BaseAdminController
 
             $this->cleanupUnusedPostAssets($id, $postAssetPaths);
 
-            return redirect()->back()->with('success', 'Postingan berhasil dihapus.');
+            return redirect()->to(site_url('admin/posts'))->with('success', 'Postingan berhasil dihapus.');
         } catch (\Exception $e) {
             $db->transRollback();
-            return redirect()->back()->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            return redirect()->to(site_url('admin/posts'))->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
     }
 
