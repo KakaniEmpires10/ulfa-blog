@@ -4,8 +4,21 @@
     <div class="modal-card">
         <form :action="categoryData.id ? '<?= site_url('admin/categories') ?>/' + categoryData.id : '<?= site_url('admin/categories') ?>'"
             method="POST"
-            x-data="{ isLoading: false }"
-            @submit="isLoading = true">
+            novalidate
+            x-data="{ 
+                isLoading: false,
+                handleSubmit(event) {
+                    if (!event.currentTarget.checkValidity()) {
+                        event.preventDefault();
+                        this.isLoading = false;
+                        event.currentTarget.reportValidity();
+                        return;
+                    }
+
+                    this.isLoading = true;
+                }
+            }"
+            @submit="handleSubmit($event)">
 
             <?= csrf_field() ?>
 
@@ -13,20 +26,20 @@
 
             <header class="modal-card-head">
                 <p class="modal-card-title" x-text="categoryData.id ? 'Edit Kategori' : 'Tambah Kategori Baru'"></p>
-                <button class="delete" type="button" aria-label="close" @click="openModal = false"></button>
+                <button class="delete" type="button" aria-label="close" @click="isLoading = false; openModal = false"></button>
             </header>
 
             <section class="modal-card-body">
                 <div class="field">
                     <label class="label">Nama Kategori</label>
                     <div class="control">
-                        <input class="input" type="text" placeholder="Perjanjian..." name="name" x-model="categoryData.name" required>
+                        <input class="input" type="text" placeholder="Perjanjian..." name="name" x-model="categoryData.name" required minlength="3">
                     </div>
                 </div>
             </section>
 
             <footer class="modal-card-foot is-justify-content-end" style="gap: 0.5rem;">
-                <button type="button" class="button" @click="openModal = false">Batal</button>
+                <button type="button" class="button" @click="isLoading = false; openModal = false">Batal</button>
                 <button
                     class="button is-link"
                     :class="{ 'is-loading': isLoading }"
