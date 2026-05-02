@@ -1532,6 +1532,7 @@ button.is-submitting .icon i {
   align-items: center;
   display: flex;
   gap: 0.8rem;
+  justify-content: end;
 }
 
 .admin-user-chip {
@@ -1987,7 +1988,7 @@ button.is-submitting .icon i {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-panel-grid .admin-panel:first-child {
+  .admin-panel-grid .admin-panel {
     grid-column: 1 / -1;
   }
 }
@@ -2079,14 +2080,14 @@ button.is-submitting .icon i {
     gap: 1rem;
   }
 
-  .admin-topbar-actions {
+  /* .admin-topbar-actions {
     width: 100%;
   }
 
   .admin-topbar-actions .button {
     width: 100%;
     justify-content: center;
-  }
+  } */
 
   .admin-user-chip {
     min-width: 0;
@@ -2123,6 +2124,10 @@ button.is-submitting .icon i {
 @media screen and (max-width: 545px) {
   .brand-mark {
     gap: 0.7rem;
+  }
+
+  .notif-button {
+    display: none;
   }
 
   .navbar-brand .brand-mark {

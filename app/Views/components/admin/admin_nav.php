@@ -15,7 +15,7 @@
         <p class="script-label">Area Admin</p>
     </div>
     <div class="admin-topbar-actions">
-        <div class="dropdown is-right" x-data="{ open: false }" @click.outside="open = false" :class="{'is-active': open}">
+        <div class="dropdown is-right notif-button" x-data="{ open: false }" @click.outside="open = false" :class="{'is-active': open}">
             <div class="dropdown-trigger">
                 <button class="button is-small" @click="open = !open" type="button">
                     <span class="icon is-small">
