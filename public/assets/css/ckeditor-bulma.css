@@ -61,7 +61,6 @@
 
 .blog-editor-shell .ck.ck-toolbar {
   border: 1px solid var(--ck-color-toolbar-border);
-  border-radius: var(--bulma-radius-medium) var(--bulma-radius-medium) 0 0;
 }
 
 .blog-editor-shell .ck.ck-editor__main > .ck-editor__editable_inline {

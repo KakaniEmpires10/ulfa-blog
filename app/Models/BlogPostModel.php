@@ -25,22 +25,6 @@ class BlogPostModel extends Model
         'view_count',
     ];
 
-    protected $validationRules = [
-        'title'       => 'required|min_length[5]|max_length[255]',
-        'content'     => 'required'
-    ];
-
-    protected $validationMessages = [
-        'title' => [
-            'required'   => 'Judul berita jangan dikosongkan ya, pembaca butuh judul untuk mulai membaca.',
-            'min_length' => 'Judulnya terlalu pendek, coba buat minimal 5 karakter agar lebih jelas.',
-            'max_length' => 'Wah, judulnya kepanjangan. Coba persingkat agar pas saat tampil di layar.',
-        ],
-        'content' => [
-            'required'   => 'Isi beritanya masih kosong, yuk ceritakan sesuatu yang menarik!',
-        ]
-    ];
-
     protected $allowCallbacks = true;
     protected $beforeInsert   = ['generateSlug'];
     protected $beforeUpdate   = ['generateSlug'];
@@ -82,6 +66,29 @@ class BlogPostModel extends Model
         $data['data']['slug'] = $slug;
 
         return $data;
+    }
+
+    public function getEditPost($id)
+    {
+        $post = $this->find($id);
+
+        if (!$post) return null;
+
+        $post['tags'] = $this->db->table('blog_post_tags bpt')
+            ->select('bt.id, bt.name')
+            ->join('blog_tags bt', 'bt.id = bpt.tag_id')
+            ->where('bpt.post_id', $id)
+            ->get()
+            ->getResultArray();
+
+        $post['categories'] = $this->db->table('blog_post_categories bpc')
+            ->select('bc.id, bc.name')
+            ->join('blog_categories bc', 'bc.id = bpc.category_id')
+            ->where('bpc.post_id', $id)
+            ->get()
+            ->getResultArray();
+
+        return $post;
     }
 
     public function getPublishedPosts(int $limit = 10, int $offset = 0, ?int $excludeId = null, ?string $categorySlug = null): array
@@ -289,7 +296,7 @@ class BlogPostModel extends Model
             $post['tags']            = $tagMap[$post['id']] ?? [];
             $post['primary_category'] = $post['categories'][0] ?? null;
             $coverPath               = $coverMap[$post['id']] ?? $post['cover_image'] ?? null;
-            $post['cover_url']       = $this->resolveAssetUrl($coverPath) ?? 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=80';
+            $post['cover_url']       = render_cover_url($coverPath) ?? 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1600&q=80';
             $post['excerpt_display'] = excerpt_text($post['excerpt'] ?: $post['content'], 180);
             $post['reading_time']    = reading_time($post['content']);
             $post['seo_title_value'] = $post['seo_title'] ?: $post['title'];
@@ -298,20 +305,5 @@ class BlogPostModel extends Model
         unset($post);
 
         return $posts;
-    }
-
-    protected function resolveAssetUrl(?string $path): ?string
-    {
-        if ($path === null || trim($path) === '') {
-            return null;
-        }
-
-        $path = trim($path);
-
-        if (preg_match('#^(?:https?:)?//#i', $path) || str_starts_with($path, 'data:')) {
-            return $path;
-        }
-
-        return base_url(ltrim($path, '/'));
     }
 }

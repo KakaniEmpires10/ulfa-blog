@@ -38,6 +38,16 @@ window.api = async function (url, options = {}) {
   }
 };
 
+window.APP = window.APP || {};
+window.APP.forms = window.APP.forms || {};
+window.APP.forms.resolveDateTimeDefault = function (value) {
+  if (typeof value === "string" && value.trim() !== "") {
+    return value;
+  }
+
+  return new Date();
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const forms = document.querySelectorAll("form");
   const submittingForms = new WeakSet();

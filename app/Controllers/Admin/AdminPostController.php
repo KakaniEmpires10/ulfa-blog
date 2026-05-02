@@ -6,7 +6,6 @@ use App\Controllers\Admin\BaseAdminController;
 use App\Models\BlogPostModel;
 use App\Models\CategoryModel;
 use App\Models\TagModel;
-use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class AdminPostController extends BaseAdminController
@@ -15,6 +14,8 @@ class AdminPostController extends BaseAdminController
 
     public function __construct()
     {
+        helper('web');
+
         $this->blogPostModel = new BlogPostModel();
         $this->categoryModel = new CategoryModel();
         $this->tagModel = new TagModel();
@@ -67,7 +68,7 @@ class AdminPostController extends BaseAdminController
                 ['title' => 'Buat Postingan Baru', 'url' => null],
             ],
             'categories'       => $this->categoryModel->findAll(),
-            'tags'             => $this->tagModel->findAll()
+            'tags'             => $this->tagModel->findAll(),
         ]);
     }
 
@@ -75,141 +76,52 @@ class AdminPostController extends BaseAdminController
     {
         $db = \Config\Database::connect();
 
-        $fileRules = [
-            'cover_image' => 'uploaded[cover_image]|max_size[cover_image,3072]|is_image[cover_image]|mime_in[cover_image,image/jpg,image/jpeg,image/png]'
-        ];
-        $fileMessages = [
-            'cover_image' => [
-                'uploaded' => 'Cover image wajib diunggah. Pilih gambar sampul untuk berita Anda.',
-                'max_size' => 'Ukuran gambar maksimal 3 MB. Silakan kompres gambar terlebih dahulu.',
-                'is_image' => 'File yang dipilih bukan gambar. Harap unggah file gambar.',
-                'mime_in'  => 'Format gambar tidak didukung. Gunakan JPG, JPEG, atau PNG saja.'
-            ]
-        ];
-
-        if (!$this->validate($fileRules, $fileMessages)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        $errors = $this->validatePostRequest(true);
+        if ($errors !== []) {
+            return redirect()->back()->withInput()->with('errors', $errors);
         }
 
-        $postData = [
-            'title'        => $this->request->getPost('title'),
-            'content'      => $this->request->getPost('content'),
-            'excerpt'      => $this->request->getPost('excerpt'),
-            'status'       => $this->request->getPost('status') ?? 'draft',
-            'published_at' => $this->request->getPost('published_at'),
-            'author_id'    => auth()->id(),
-        ];
-
-        if (!$this->blogPostModel->validate($postData)) {
-            return redirect()->back()->withInput()->with('errors', $this->blogPostModel->errors());
-        }
-
-        $categoryId = $this->request->getPost('category_id');
-        if (empty($categoryId) || !is_numeric($categoryId) || $categoryId <= 0) {
-            return redirect()->back()->withInput()->with('error', 'Pilih kategori yang valid.');
-        }
-
-        $categoryExists = $db->table('blog_categories')->where('id', $categoryId)->countAllResults();
-        if ($categoryExists == 0) {
-            return redirect()->back()->withInput()->with('error', 'Kategori yang dipilih tidak ditemukan.');
-        }
-
-        $tagIds = $this->request->getPost('tag_ids');
-        if (!empty($tagIds)) {
-            if (!is_array($tagIds)) {
-                return redirect()->back()->withInput()->with('error', 'Format tag tidak valid.');
-            }
-
-            foreach ($tagIds as $tagId) {
-                if (!is_numeric($tagId) || $tagId <= 0) {
-                    return redirect()->back()->withInput()->with('error', 'ID tag harus berupa angka positif.');
-                }
-            }
-
-            $existingTags = $db->table('blog_tags')->whereIn('id', $tagIds)->countAllResults();
-            if ($existingTags != count($tagIds)) {
-                return redirect()->back()->withInput()->with('error', 'Salah satu tag yang dipilih tidak terdaftar.');
-            }
-        }
+        $tagIds = $this->normalizeTagIds($this->request->getPost('tag_ids'));
 
         $db->transStart();
-
         try {
             $file = $this->request->getFile('cover_image');
-            $fileName = $file->getRandomName();
-            $uploadPath = 'uploads/blog/';
+            $media = $this->storeBlogMediaFile($file, $db, 'Gagal mengunggah file cover.');
+            $fullPath = $media['file_path'];
 
-            if (!$file->move(FCPATH . $uploadPath, $fileName)) {
-                throw new \Exception('Gagal mengunggah file cover. Periksa izin folder.');
-            }
+            $postData = $this->buildPostPayload($fullPath);
+            $postData['author_id'] = auth()->id();
 
-            $fullPath = $uploadPath . $fileName;
-
-            $isStored = $db->table('media')->insert([
-                'file_name'   => $fileName,
-                'file_path'   => $fullPath,
-                'mime_type'   => $file->getClientMimeType(),
-                'size'        => $file->getSize(),
-                'uploaded_by' => auth()->id(),
-            ]);
-
-            if (!$isStored) {
-                throw new \RuntimeException('Gagal menyimpan metadata gambar.');
-            }
-            $mediaId = $db->insertID();
-
-            $postData['cover_image'] = $fullPath;
             $postId = $this->blogPostModel->insert($postData);
-
             if (!$postId) {
-                throw new \Exception(implode(', ', $this->blogPostModel->errors()));
+                throw new \Exception('Gagal menyimpan data post.');
             }
 
-            $db->table('blog_post_media')->insert([
-                'post_id'  => $postId,
-                'media_id' => $mediaId,
-                'type'     => 'cover'
-            ]);
+            $db->table('blog_post_media')->insert(['post_id' => $postId, 'media_id' => $media['id'], 'type' => 'cover']);
+            $db->table('blog_post_categories')->insert(['post_id' => $postId, 'category_id' => $this->request->getPost('category_id')]);
 
-            // 4. Insert category relation
-            $db->table('blog_post_categories')->insert([
-                'post_id'     => $postId,
-                'category_id' => $categoryId
-            ]);
-
-            // 5. Insert tags
             if (!empty($tagIds)) {
-                $tagsData = [];
-                foreach ($tagIds as $tagId) {
-                    $tagsData[] = [
-                        'post_id' => $postId,
-                        'tag_id'  => $tagId
-                    ];
-                }
+                $tagsData = array_map(fn($tagId) => ['post_id' => $postId, 'tag_id' => $tagId], $tagIds);
                 $db->table('blog_post_tags')->insertBatch($tagsData);
             }
 
             $db->transComplete();
 
             if ($db->transStatus() === false) {
-                throw new \Exception('Terjadi kesalahan saat menyimpan data ke database.');
+                throw new \Exception('Transaksi database gagal.');
             }
 
-            return redirect()->to(site_url('admin/posts'))->with('success', 'Berita berhasil diterbitkan!');
-        } catch (DatabaseException $e) {
+            return redirect()->to(site_url('admin/posts'))->with('success', 'Blog post berhasil diterbitkan!');
+        } catch (\Exception $e) {
             $db->transRollback();
-            // Hapus file yang sudah terupload jika terjadi error
-            if (isset($fullPath) && file_exists(FCPATH . $fullPath)) {
-                unlink(FCPATH . $fullPath);
-            }
-
+            if (isset($fullPath) && file_exists(FCPATH . $fullPath)) unlink(FCPATH . $fullPath);
             return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
     }
 
     public function edit($id)
     {
-        $post = $this->blogPostModel->find($id);
+        $post = $this->blogPostModel->getEditPost($id);
 
         if (!$post) {
             return redirect()->to(site_url('/admin/posts'))->with('error', 'Postingan tidak ditemukan.');
@@ -233,179 +145,71 @@ class AdminPostController extends BaseAdminController
     public function update($id)
     {
         $db = \Config\Database::connect();
-
-        // Cek apakah post dengan ID ini ada
         $existingPost = $this->blogPostModel->find($id);
-        if (!$existingPost) {
-            return redirect()->back()->with('error', 'Data berita tidak ditemukan.');
-        }
+        if (!$existingPost) return redirect()->back()->with('error', 'Data tidak ditemukan.');
 
-        // Siapkan validasi file (opsional)
-        $uploadNewImage = false;
         $file = $this->request->getFile('cover_image');
+        $isNewFileUploaded = $this->hasSubmittedCoverImage($file);
 
-        if ($file && $file->isValid() && !$file->hasMoved()) {
-            $uploadNewImage = true;
-            $fileRules = [
-                'cover_image' => 'max_size[cover_image,3072]|is_image[cover_image]|mime_in[cover_image,image/jpg,image/jpeg,image/png]'
-            ];
-            $fileMessages = [
-                'cover_image' => [
-                    'max_size' => 'Ukuran gambar maksimal 3 MB. Silakan kompres gambar Anda terlebih dahulu.',
-                    'is_image' => 'File yang dipilih bukan gambar. Harap unggah file gambar (JPG, JPEG, PNG).',
-                    'mime_in'  => 'Format gambar tidak didukung. Gunakan JPG, JPEG, atau PNG saja.'
-                ]
-            ];
-
-            if (!$this->validate($fileRules, $fileMessages)) {
-                return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-            }
+        $errors = $this->validatePostRequest(false);
+        if ($errors !== []) {
+            return redirect()->back()->withInput()->with('errors', $errors);
         }
 
-        // Validasi data post
-        $postData = [
-            'title'       => $this->request->getPost('title'),
-            'content'     => $this->request->getPost('content'),
-            'excerpt'     => $this->request->getPost('excerpt'),
-            'status'      => $this->request->getPost('status') ?? 'draft',
-            'published_at' => $this->request->getPost('published_at'),
-        ];
+        $tagIds = $this->normalizeTagIds($this->request->getPost('tag_ids'));
 
-        if (!$this->blogPostModel->validate($postData)) {
-            return redirect()->back()->withInput()->with('errors', $this->blogPostModel->errors());
-        }
-
-        $categoryId = $this->request->getPost('category_id');
-        if (empty($categoryId) || !is_numeric($categoryId) || $categoryId <= 0) {
-            return redirect()->back()->withInput()->with('error', 'Pilih kategori yang valid.');
-        }
-
-        $categoryExists = $db->table('blog_categories')->where('id', $categoryId)->countAllResults();
-        if ($categoryExists == 0) {
-            return redirect()->back()->withInput()->with('error', 'Kategori yang dipilih tidak ditemukan.');
-        }
-
-        $tagIds = $this->request->getPost('tag_ids');
-        if (!empty($tagIds)) {
-            if (!is_array($tagIds)) {
-                return redirect()->back()->withInput()->with('error', 'Format tag tidak valid.');
-            }
-
-            foreach ($tagIds as $tagId) {
-                if (!is_numeric($tagId) || $tagId <= 0) {
-                    return redirect()->back()->withInput()->with('error', 'ID tag harus berupa angka positif.');
-                }
-            }
-
-            $existingTags = $db->table('blog_tags')->whereIn('id', $tagIds)->countAllResults();
-            if ($existingTags != count($tagIds)) {
-                return redirect()->back()->withInput()->with('error', 'Salah satu tag yang dipilih tidak terdaftar.');
-            }
-        }
-
-        // Mulai transaksi
         $db->transStart();
-
         try {
-            $uploadPath = 'uploads/blog/';
-            $oldCoverPath = $existingPost['cover_image'];
-            $oldMediaId = null;
+            $postData = $this->buildPostPayload();
 
-            // Cari media_id dari cover lama
-            $oldMedia = $db->table('blog_post_media')
-                ->select('media_id')
-                ->where('post_id', $id)
-                ->where('type', 'cover')
-                ->get()
-                ->getRowArray();
+            $tempNewFilePath = null;
 
-            if ($oldMedia) {
-                $oldMediaId = $oldMedia['media_id'];
-            }
+            if ($isNewFileUploaded) {
+                $newMedia = $this->storeBlogMediaFile($file, $db, 'Gagal memindahkan file baru ke server.');
+                $tempNewFilePath = $newMedia['file_path'];
 
-            // Jika upload gambar baru
-            if ($uploadNewImage) {
-                // Upload file baru
-                $newFileName = $file->getRandomName();
-                if (!$file->move(FCPATH . $uploadPath, $newFileName)) {
-                    throw new \Exception('Gagal mengunggah gambar cover baru.');
-                }
+                $oldMedia = $db->table('blog_post_media')->where(['post_id' => $id, 'type' => 'cover'])->get()->getRow();
 
-                $newFullPath = $uploadPath . $newFileName;
-
-                // Insert ke tabel media (cover baru)
-                $db->table('media')->insert([
-                    'file_name'   => $newFileName,
-                    'file_path'   => $newFullPath,
-                    'mime_type'   => $file->getClientMimeType(),
-                    'size'        => $file->getSize(),
-                    'uploaded_by' => auth()->id(),
-                ]);
-                $newMediaId = $db->insertID();
-
-                // Update relasi blog_post_media
-                if ($oldMediaId) {
-                    // Hapus relasi lama
-                    $db->table('blog_post_media')
-                        ->where('post_id', $id)
-                        ->where('type', 'cover')
-                        ->delete();
-
-                    // Hapus record media lama dari tabel media
-                    $db->table('media')->where('id', $oldMediaId)->delete();
-
-                    // Hapus file fisik lama
-                    if (!empty($oldCoverPath) && file_exists(FCPATH . $oldCoverPath)) {
-                        unlink(FCPATH . $oldCoverPath);
-                    }
-                }
-
-                // Insert relasi baru
+                $db->table('blog_post_media')->where(['post_id' => $id, 'type' => 'cover'])->delete();
                 $db->table('blog_post_media')->insert([
                     'post_id'  => $id,
-                    'media_id' => $newMediaId,
+                    'media_id' => $newMedia['id'],
                     'type'     => 'cover'
                 ]);
 
-                // Update cover_image di blog_posts dengan path baru
-                $postData['cover_image'] = $newFullPath;
+                $postData['cover_image'] = $tempNewFilePath;
             }
 
-            // Update post
-            if (!$this->blogPostModel->update($id, $postData)) {
-                throw new \Exception(implode(', ', $this->blogPostModel->errors()));
-            }
+            $this->blogPostModel->update($id, $postData);
 
-            // Update kategori
-            $db->table('blog_post_category')->where('post_id', $id)->delete();
-            $db->table('blog_post_category')->insert([
-                'post_id'     => $id,
-                'category_id' => $categoryId
-            ]);
+            $db->table('blog_post_categories')->where('post_id', $id)->delete();
+            $db->table('blog_post_categories')->insert(['post_id' => $id, 'category_id' => $this->request->getPost('category_id')]);
 
-            // Update tag (sync)
-            $db->table('blog_post_tag')->where('post_id', $id)->delete();
-            if (!empty($tagIds)) {
-                $tagsData = [];
-                foreach ($tagIds as $tagId) {
-                    $tagsData[] = ['post_id' => $id, 'tag_id' => $tagId];
-                }
-                $db->table('blog_post_tag')->insertBatch($tagsData);
+            $db->table('blog_post_tags')->where('post_id', $id)->delete();
+            if (!empty($tagIds) && is_array($tagIds)) {
+                $tagsData = array_map(fn($tagId) => ['post_id' => $id, 'tag_id' => $tagId], $tagIds);
+                $db->table('blog_post_tags')->insertBatch($tagsData);
             }
 
             $db->transComplete();
 
             if ($db->transStatus() === false) {
-                throw new \Exception('Terjadi kesalahan saat menyimpan perubahan.');
+                throw new \Exception('Transaksi database gagal.');
+            }
+
+            if ($isNewFileUploaded && isset($oldMedia)) {
+                $db->table('media')->where('id', $oldMedia->media_id)->delete();
+                if (!empty($existingPost['cover_image']) && file_exists(FCPATH . $existingPost['cover_image'])) {
+                    unlink(FCPATH . $existingPost['cover_image']);
+                }
             }
 
             return redirect()->to(site_url('admin/posts'))->with('success', 'Berita berhasil diperbarui!');
         } catch (\Exception $e) {
             $db->transRollback();
 
-            // Jika upload baru gagal, hapus file yang sudah terupload
-            if ($uploadNewImage && isset($newFullPath) && file_exists(FCPATH . $newFullPath)) {
-                unlink(FCPATH . $newFullPath);
+            if (isset($tempNewFilePath) && file_exists(FCPATH . $tempNewFilePath)) {
+                unlink(FCPATH . $tempNewFilePath);
             }
 
             return redirect()->back()->withInput()->with('error', $e->getMessage());
@@ -415,7 +219,11 @@ class AdminPostController extends BaseAdminController
     public function updateStatus($id)
     {
         $json = $this->request->getJSON();
-        $status = $json->status;
+        $status = $json->status ?? null;
+
+        if (!in_array($status, ['draft', 'published'], true)) {
+            return $this->response->setStatusCode(422)->setJSON(['message' => 'Status postingan tidak valid.']);
+        }
 
         if ($this->blogPostModel->update($id, ['status' => $status])) {
             return $this->response->setJSON(['status' => 'success']);
@@ -496,27 +304,12 @@ class AdminPostController extends BaseAdminController
             ])->setStatusCode(400);
         }
 
-        $db         = \Config\Database::connect();
-        $uploadPath = 'uploads/blog/';
-        $fileName = $file->getRandomName();
-        $fullPath   = $uploadPath . $fileName;
+        $db = \Config\Database::connect();
+        $fullPath = null;
 
         try {
-            if (!$file->move(FCPATH . $uploadPath, $fileName)) {
-                throw new \RuntimeException('Gagal mengupload gambar. Silakan coba lagi.');
-            }
-
-            $isStored = $db->table('media')->insert([
-                'file_name'   => $fileName,
-                'file_path'   => $fullPath,
-                'mime_type'   => $file->getClientMimeType(),
-                'size'        => $file->getSize(),
-                'uploaded_by' => auth()->id(),
-            ]);
-
-            if (!$isStored) {
-                throw new \RuntimeException('Gagal menyimpan metadata gambar.');
-            }
+            $media = $this->storeBlogMediaFile($file, $db, 'Gagal mengupload gambar. Silakan coba lagi.');
+            $fullPath = $media['file_path'];
 
             return $this->response->setJSON([
                 'url'      => base_url($fullPath),
@@ -535,6 +328,185 @@ class AdminPostController extends BaseAdminController
                 ],
                 'csrfHash' => csrf_hash(),
             ])->setStatusCode(500);
+        }
+    }
+
+    private function validatePostRequest(bool $requireCoverImage): array
+    {
+        $rules = [
+            'title'        => 'required|min_length[5]|max_length[255]',
+            'excerpt'      => 'permit_empty|max_length[500]',
+            'content'      => 'required',
+            'category_id'  => 'required|is_not_unique[blog_categories.id]',
+            'published_at' => 'permit_empty|valid_date[Y-m-d H:i:s]',
+            'status'       => 'permit_empty|in_list[published]',
+        ];
+
+        $file = $this->request->getFile('cover_image');
+        if ($requireCoverImage || $this->hasSubmittedCoverImage($file)) {
+            $rules['cover_image'] = ($requireCoverImage ? 'uploaded[cover_image]|' : '')
+                . 'max_size[cover_image,3072]|is_image[cover_image]|mime_in[cover_image,image/jpg,image/jpeg,image/png]';
+        }
+
+        $errors = [];
+        if (!$this->validate($rules, $this->postValidationMessages())) {
+            $errors = $this->validator->getErrors();
+        }
+
+        if (!isset($errors['content']) && plain_text_from_html($this->request->getPost('content')) === '') {
+            $errors['content'] = 'Isi berita belum berisi teks yang bisa dibaca.';
+        }
+
+        $tagError = $this->validateTagIds($this->request->getPost('tag_ids'));
+        if ($tagError !== null) {
+            $errors['tag_ids'] = $tagError;
+        }
+
+        return $errors;
+    }
+
+    private function postValidationMessages(): array
+    {
+        return [
+            'cover_image' => [
+                'uploaded' => 'Cover image wajib diunggah. Pilih gambar sampul untuk berita Anda.',
+                'max_size' => 'Ukuran gambar maksimal 3 MB. Silakan kompres gambar terlebih dahulu.',
+                'is_image' => 'File yang dipilih bukan gambar. Harap unggah file gambar.',
+                'mime_in'  => 'Format gambar tidak didukung. Gunakan JPG, JPEG, atau PNG saja.',
+            ],
+            'title' => [
+                'required'   => 'Judul berita jangan dikosongkan ya, pembaca butuh judul untuk mulai membaca.',
+                'min_length' => 'Judulnya terlalu pendek, coba buat minimal 5 karakter agar lebih jelas.',
+                'max_length' => 'Wah, judulnya kepanjangan. Coba persingkat agar pas saat tampil di layar.',
+            ],
+            'excerpt' => [
+                'max_length' => 'Ringkasan terlalu panjang. Batasi maksimal 500 karakter.',
+            ],
+            'content' => [
+                'required' => 'Isi beritanya masih kosong, yuk ceritakan sesuatu yang menarik!',
+            ],
+            'category_id' => [
+                'required'      => 'Silakan pilih kategori berita.',
+                'is_not_unique' => 'Kategori yang dipilih tidak terdaftar di sistem.',
+            ],
+            'published_at' => [
+                'valid_date' => 'Tanggal publikasi tidak valid.',
+            ],
+            'status' => [
+                'in_list' => 'Status postingan tidak valid.',
+            ],
+        ];
+    }
+
+    private function validateTagIds($tagIds): ?string
+    {
+        if (empty($tagIds)) {
+            return null;
+        }
+
+        if (!is_array($tagIds)) {
+            return 'Format tag tidak valid.';
+        }
+
+        foreach ($tagIds as $tagId) {
+            if (!is_numeric($tagId) || (int) $tagId <= 0) {
+                return 'Tag yang dipilih tidak valid.';
+            }
+        }
+
+        $normalizedTagIds = $this->normalizeTagIds($tagIds);
+        if ($normalizedTagIds === []) {
+            return null;
+        }
+
+        $existingTags = \Config\Database::connect()
+            ->table('blog_tags')
+            ->whereIn('id', $normalizedTagIds)
+            ->countAllResults();
+
+        return $existingTags === count($normalizedTagIds)
+            ? null
+            : 'Salah satu tag yang dipilih tidak terdaftar.';
+    }
+
+    private function normalizeTagIds($tagIds): array
+    {
+        if (empty($tagIds) || !is_array($tagIds)) {
+            return [];
+        }
+
+        return array_values(array_unique(array_map('intval', $tagIds)));
+    }
+
+    private function hasSubmittedCoverImage($file): bool
+    {
+        return $file !== null && $file->getError() !== UPLOAD_ERR_NO_FILE;
+    }
+
+    private function buildPostPayload(?string $coverImage = null): array
+    {
+        $title = trim((string) $this->request->getPost('title'));
+        $excerpt = trim((string) $this->request->getPost('excerpt'));
+        $content = (string) $this->request->getPost('content');
+
+        $postData = [
+            'title'           => $title,
+            'content'         => $content,
+            'excerpt'         => $excerpt,
+            'status'          => $this->request->getPost('status') === 'published' ? 'published' : 'draft',
+            'published_at'    => $this->request->getPost('published_at') ?: null,
+            'seo_title'       => excerpt_text($title, 255),
+            'seo_description' => blog_seo_description($excerpt, $content),
+        ];
+
+        if ($coverImage !== null) {
+            $postData['cover_image'] = $coverImage;
+        }
+
+        return $postData;
+    }
+
+    private function storeBlogMediaFile($file, $db, string $moveErrorMessage): array
+    {
+        $uploadPath = 'uploads/blog/';
+        $absoluteUploadPath = FCPATH . $uploadPath;
+
+        if (!is_dir($absoluteUploadPath) && !mkdir($absoluteUploadPath, 0775, true) && !is_dir($absoluteUploadPath)) {
+            throw new \RuntimeException('Direktori upload tidak bisa dibuat.');
+        }
+
+        $fileName = $file->getRandomName();
+        $fullPath = $uploadPath . $fileName;
+
+        if (!$file->move($absoluteUploadPath, $fileName)) {
+            throw new \RuntimeException($moveErrorMessage);
+        }
+
+        try {
+            $isStored = $db->table('media')->insert([
+                'file_name'   => $fileName,
+                'file_path'   => $fullPath,
+                'mime_type'   => $file->getClientMimeType(),
+                'size'        => $file->getSize(),
+                'uploaded_by' => auth()->id(),
+            ]);
+
+            if (!$isStored) {
+                throw new \RuntimeException('Gagal menyimpan metadata gambar.');
+            }
+
+            return [
+                'id'        => $db->insertID(),
+                'file_name' => $fileName,
+                'file_path' => $fullPath,
+            ];
+        } catch (\Throwable $exception) {
+            $storedFile = FCPATH . $fullPath;
+            if (is_file($storedFile)) {
+                unlink($storedFile);
+            }
+
+            throw $exception;
         }
     }
 

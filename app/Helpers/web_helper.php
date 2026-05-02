@@ -145,10 +145,20 @@ if (! function_exists('blog_date')) {
     }
 }
 
+if (! function_exists('plain_text_from_html')) {
+    function plain_text_from_html(?string $html): string
+    {
+        $text = html_entity_decode(strip_tags((string) $html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/\s+/u', ' ', $text);
+
+        return trim((string) $text);
+    }
+}
+
 if (! function_exists('excerpt_text')) {
     function excerpt_text(?string $text, int $limit = 180): string
     {
-        $text = trim(strip_tags((string) $text));
+        $text = plain_text_from_html($text);
 
         if ($text === '') {
             return '';
@@ -158,14 +168,27 @@ if (! function_exists('excerpt_text')) {
             return $text;
         }
 
-        return rtrim(mb_substr($text, 0, $limit - 3)) . '...';
+        return rtrim(mb_substr($text, 0, max(0, $limit - 3))) . '...';
+    }
+}
+
+if (! function_exists('blog_seo_description')) {
+    function blog_seo_description(?string $excerpt, ?string $content, int $limit = 160): string
+    {
+        $source = plain_text_from_html($excerpt);
+
+        if ($source === '') {
+            $source = plain_text_from_html($content);
+        }
+
+        return excerpt_text($source, $limit);
     }
 }
 
 if (! function_exists('reading_time')) {
     function reading_time(?string $content, int $wordsPerMinute = 200): string
     {
-        $wordCount = str_word_count(strip_tags((string) $content));
+        $wordCount = str_word_count(plain_text_from_html($content));
         $minutes   = max(1, (int) ceil($wordCount / max(1, $wordsPerMinute)));
 
         return $minutes . ' menit baca';
