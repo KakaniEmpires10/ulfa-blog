@@ -40,6 +40,12 @@
                         </div>
                     <?php endif; ?>
                 </article>
+
+                <?php if (! empty($showComments)) : ?>
+                    <section class="post-detail-card mt-5" aria-label="Komentar">
+                        <div id="disqus_thread"></div>
+                    </section>
+                <?php endif; ?>
             </div>
 
             <div class="column is-4-desktop">
@@ -49,3 +55,24 @@
     </div>
 </section>
 <?= $this->endSection() ?>
+
+<?php if (! empty($showComments)) : ?>
+    <?= $this->section('page_script') ?>
+    <script>
+        window.disqus_config = function() {
+            this.page.url = <?= json_encode(current_url(), JSON_UNESCAPED_SLASHES) ?>;
+            this.page.identifier = <?= json_encode('post-' . ($post['id'] ?? $post['slug']), JSON_UNESCAPED_SLASHES) ?>;
+            this.page.title = <?= json_encode($post['title'] ?? '', JSON_UNESCAPED_SLASHES) ?>;
+        };
+
+        (function() {
+            const d = document;
+            const s = d.createElement('script');
+            s.src = 'https://<?= esc($disqusShortname, 'js') ?>.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', String(Date.now()));
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>Aktifkan JavaScript untuk melihat komentar.</noscript>
+    <?= $this->endSection() ?>
+<?php endif; ?>

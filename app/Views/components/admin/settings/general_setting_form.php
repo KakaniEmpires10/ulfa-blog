@@ -125,6 +125,19 @@
                 </div>
             </div>
 
+            <div class="column is-8">
+                <div class="field">
+                    <label class="label">Disqus Shortname</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" name="disqus_shortname" value="<?= esc(old('disqus_shortname', $disqus_shortname ?? '')) ?>" placeholder="contoh: ulfa-blog" pattern="[A-Za-z0-9-]+">
+                        <span class="icon is-small is-left">
+                            <i class="fa-regular fa-comments"></i>
+                        </span>
+                    </div>
+                    <p class="help">Isi dengan shortname dari Disqus. Komentar akan tampil jika komentar aktif dan shortname tersedia.</p>
+                </div>
+            </div>
+
             <div class="column is-12 mt-5 is-flex is-justify-content-end">
                 <button type="submit" class="button is-primary" :class="{ 'is-loading': isLoading }" :disabled="isLoading">
                     <i class="fas fa-save mr-2"></i> Simpan Perubahan

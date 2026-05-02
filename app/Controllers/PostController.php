@@ -28,6 +28,9 @@ class PostController extends BaseController
         }
 
         $profileModel = new UserProfileModel();
+        $disqusShortname = trim((string) get_setting('disqus_shortname', ''));
+        $hasValidDisqusShortname = preg_match('/^[a-z0-9-]+$/', $disqusShortname) === 1;
+        $commentsEnabled = get_setting('enable_comment', get_setting('enable_comments', '0')) === '1';
 
         return view('pages/post_detail', [
             'title'             => $post['title'],
@@ -39,6 +42,8 @@ class PostController extends BaseController
             'popularPosts'      => $postModel->getPopularPosts(4, (int) $post['id']),
             'sidebarCategories' => $postModel->getSidebarCategories(),
             'isPreview'         => !$isPublished,
+            'showComments'      => $commentsEnabled && $isPublished && $hasValidDisqusShortname,
+            'disqusShortname'   => $disqusShortname,
         ]);
     }
 }

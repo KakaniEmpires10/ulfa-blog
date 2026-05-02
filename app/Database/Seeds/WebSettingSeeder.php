@@ -16,11 +16,11 @@ class WebSettingSeeder extends Seeder
             'contact_email'          => 'hello@ulfablog.test',
             'primary_color'          => '#ce8460',
             'secondary_color'        => '#1c1d1f',
-            'theme_mode'             => 'light',
-            'border_radius'          => '24',
+            'border_radius'          => '8',
             'homepage_slider_source' => 'popular',
             'homepage_slider_limit'  => '3',
             'enable_comment'         => '0',
+            'disqus_shortname'       => '',
         ];
 
         foreach ($settings as $key => $value) {

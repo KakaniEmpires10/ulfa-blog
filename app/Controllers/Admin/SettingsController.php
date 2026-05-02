@@ -33,7 +33,8 @@ class SettingsController extends BaseAdminController
             'primary_color'          => $this->settingsModel->getValue('primary_color'),
             'secondary_color'        => $this->settingsModel->getValue('secondary_color'),
             'border_radius'          => $this->settingsModel->getValue('border_radius'),
-            'enable_comments'        => $this->settingsModel->getValue('enable_comments'),
+            'enable_comment'         => $this->settingsModel->getValue('enable_comment', $this->settingsModel->getValue('enable_comments', '0')),
+            'disqus_shortname'       => $this->settingsModel->getValue('disqus_shortname'),
             'homepage_slider_limit'  => $this->settingsModel->getValue('homepage_slider_limit'),
             'homepage_slider_source' => $this->settingsModel->getValue('homepage_slider_source'),
             'theme'                  => $this->settingsModel->getValue('theme')
@@ -50,7 +51,8 @@ class SettingsController extends BaseAdminController
             'primary_color',
             'secondary_color',
             'border_radius',
-            'enable_comments',
+            'enable_comment',
+            'disqus_shortname',
             'homepage_slider_limit',
             'homepage_slider_source',
             'theme'
@@ -59,9 +61,13 @@ class SettingsController extends BaseAdminController
         foreach ($fields as $field) {
             $value = $this->request->getPost($field);
 
-            // Handle checkbox for enable_comments
-            if ($field === 'enable_comments') {
-                $value = $value === 'on' ? '1' : '0';
+            if ($field === 'enable_comment') {
+                $value = $value === '1' ? '1' : '0';
+            }
+
+            if ($field === 'disqus_shortname') {
+                $value = strtolower(trim((string) $value));
+                $value = preg_replace('/[^a-z0-9-]/', '', $value) ?? '';
             }
 
             $this->settingsModel->setValue($field, $value);
