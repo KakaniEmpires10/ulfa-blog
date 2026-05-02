@@ -3,9 +3,9 @@
         <section class="sidebar-widget">
             <h3 class="widget-title"><span>Tentang Penulis</span></h3>
             <div class="sidebar-profile">
-                <img src="<?= esc($profile['avatar_path']) ?>" alt="<?= esc($profile['display_name']) ?>">
+                <img src="<?= render_cover_url(esc($profile['avatar_path'])) ?>" alt="<?= esc($profile['display_name']) ?>">
                 <div>
-                    <h4><?= esc($profile['display_name']) ?></h4>
+                    <h4 class="has-text-weight-semibold"><?= esc($profile['display_name']) ?></h4>
                     <p><?= esc(excerpt_text($profile['bio'], 110)) ?></p>
                     <a class="sidebar-link-with-icon cta-link mt-2" href="<?= site_url('/about') ?>">
                         Lihat selengkapnya
@@ -21,7 +21,7 @@
         <div class="sidebar-list">
             <?php foreach ($popularPosts as $popularPost) : ?>
                 <a class="sidebar-post" href="<?= site_url('/post/' . $popularPost['slug']) ?>">
-                    <img src="<?= esc($popularPost['cover_url']) ?>" alt="<?= esc($popularPost['title']) ?>">
+                    <img src="<?= render_cover_url(esc($popularPost['cover_url'])) ?>" alt="<?= esc($popularPost['title']) ?>">
                     <div>
                         <strong><?= esc($popularPost['title']) ?></strong>
                         <small><?= esc(blog_date($popularPost['published_at'])) ?></small>

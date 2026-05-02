@@ -780,8 +780,9 @@ a:not(.button):not(.button *):not(.tabs *):hover {
 }
 
 .sidebar-profile img {
-  height: 5rem;
-  width: 5rem;
+  height: 4rem;
+  width: 4rem;
+  flex-shrink: 0;
 }
 
 .sidebar-post {
@@ -798,6 +799,7 @@ a:not(.button):not(.button *):not(.tabs *):hover {
 .sidebar-post img {
   height: 4.2rem;
   width: 4.2rem;
+  flex-shrink: 0;
 }
 
 .sidebar-post strong,
