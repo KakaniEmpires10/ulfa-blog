@@ -1,5 +1,7 @@
 <?php
 
+// use CodeIgniter\Exceptions\PageNotFoundException;
+// use CodeIgniter\HTTP\Exceptions\BadRequestException;
 use CodeIgniter\Router\RouteCollection;
 
 /**
@@ -64,5 +66,20 @@ $routes->group('admin', [
         $routes->post('profile', 'SettingsController::updateProfile', ['as' => 'settings_profile_update']);
     });
 });
+
+// Simulasi error 400
+// $routes->get('test-400', static function () {
+//     throw new BadRequestException('Contoh bad request dari simulasi.');
+// });
+
+// Simulasi error 500
+// $routes->get('test-500', static function () {
+//     throw new \RuntimeException('Contoh server error dari simulasi.');
+// });
+
+// Simulasi error 404
+// $routes->get('test-404', static function () {
+//     throw new PageNotFoundException('Halaman tidak ditemukan.');
+// });
 
 service('auth')->routes($routes, ['except' => ['register']]);
