@@ -1373,8 +1373,10 @@ button.is-submitting .icon i {
 }
 
 .admin-nav-link.is-active {
-  background: var(--bulma-scheme-main);
-  color: var(--bulma-text-strong);
+  background: color-mix(in srgb, var(--bulma-white) 6%, transparent);
+  border-color: color-mix(in srgb, var(--bulma-white) 10%, transparent);
+  color: var(--bulma-dark-invert);
+  outline: none;
 }
 
 .admin-nav-link.is-active .admin-nav-copy small {
