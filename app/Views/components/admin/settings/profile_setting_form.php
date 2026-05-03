@@ -1,5 +1,92 @@
-<form class="is-flex is-flex-direction-column" style="gap: 1.5rem;" action="<?= url_to('settings_profile_update') ?>" method="POST" x-data="{ isLoading: false }" @submit="isLoading = true">
+<?php $accountUsername = old('username', $accountUser->username ?? $adminUser->username ?? ''); ?>
+
+<form
+    class="is-flex is-flex-direction-column"
+    style="gap: 1.5rem;"
+    action="<?= url_to('settings_profile_update') ?>"
+    method="POST"
+    x-ref="profileForm"
+    x-data="{
+        isLoading: false,
+        confirmModalOpen: false,
+        originalUsername: '<?= esc($accountUsername, 'js') ?>',
+        username: '<?= esc($accountUsername, 'js') ?>',
+        newPassword: '',
+        newPasswordConfirmation: '',
+        currentPassword: '',
+        sensitiveChanged() {
+            return this.username.trim() !== this.originalUsername.trim()
+                || this.newPassword !== ''
+                || this.newPasswordConfirmation !== '';
+        },
+        submitProfile(event) {
+            if (this.sensitiveChanged() && this.currentPassword.trim() === '') {
+                event.preventDefault();
+                this.confirmModalOpen = true;
+                this.$nextTick(() => {
+                    if (this.$refs.currentPassword) {
+                        this.$refs.currentPassword.focus();
+                    }
+                });
+                return;
+            }
+
+            this.isLoading = true;
+        },
+        confirmAndSubmit() {
+            if (this.currentPassword.trim() === '') {
+                this.$refs.currentPassword.focus();
+                return;
+            }
+            this.isLoading = true;
+            this.confirmModalOpen = false;
+            this.$nextTick(() => {
+                this.$refs.profileForm.submit();
+            });
+        }
+    }"
+    @submit="submitProfile($event)"
+    @keydown.escape.window="confirmModalOpen = false">
     <?= csrf_field() ?>
+
+    <div class="card-panel">
+        <div class="columns is-multiline">
+            <div class="column is-12">
+                <h2 class="script-label">Akun Login</h2>
+            </div>
+
+            <div class="column is-12">
+                <div class="field">
+                    <label class="label">Username</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" name="username" x-model.trim="username" value="<?= esc($accountUsername) ?>" autocomplete="username" required>
+                        <span class="icon is-small is-left"><i class="fas fa-user"></i></span>
+                    </div>
+                    <p class="help">Perubahan username membutuhkan konfirmasi password saat ini.</p>
+                </div>
+            </div>
+
+            <div class="column is-12 is-6-desktop">
+                <div class="field">
+                    <label class="label">Password Baru</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="password" name="new_password" x-model="newPassword" autocomplete="new-password" placeholder="Kosongkan jika tidak diganti">
+                        <span class="icon is-small is-left"><i class="fas fa-lock"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column is-12 is-6-desktop">
+                <div class="field">
+                    <label class="label">Konfirmasi Password Baru</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="password" name="new_password_confirmation" x-model="newPasswordConfirmation" autocomplete="new-password" placeholder="Ulangi password baru">
+                        <span class="icon is-small is-left"><i class="fas fa-shield-halved"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="card-panel">
         <div class="columns is-multiline">
@@ -116,6 +203,39 @@
                     <i class="fas fa-save mr-2"></i> Perbarui Profil
                 </button>
             </div>
+        </div>
+    </div>
+
+    <div class="modal" :class="{ 'is-active': confirmModalOpen }" x-cloak>
+        <div class="modal-background" @click="confirmModalOpen = false"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Konfirmasi Akses</p>
+                <button class="delete" type="button" aria-label="close" @click="confirmModalOpen = false"></button>
+            </header>
+
+            <section class="modal-card-body">
+                <div class="field">
+                    <label class="label">Password Saat Ini</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="password" name="current_password" x-model="currentPassword" x-ref="currentPassword" autocomplete="current-password" placeholder="Masukkan password saat ini">
+                        <span class="icon is-small is-left"><i class="fas fa-key"></i></span>
+                    </div>
+                    <p class="help">Wajib diisi untuk menyimpan perubahan username atau password.</p>
+                </div>
+            </section>
+
+            <footer class="modal-card-foot is-justify-content-flex-end" style="gap: 0.5rem;">
+                <button class="button" type="button" @click="confirmModalOpen = false">Batal</button>
+                <button
+                    type="button"
+                    class="button is-primary"
+                    :class="{ 'is-loading': isLoading }"
+                    :disabled="isLoading || currentPassword.trim() === ''"
+                    @click="confirmAndSubmit()">
+                    <i class="fas fa-check mr-2"></i> Konfirmasi &amp; Simpan
+                </button>
+            </footer>
         </div>
     </div>
 </form>

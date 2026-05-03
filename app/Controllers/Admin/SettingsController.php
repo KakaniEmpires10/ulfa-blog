@@ -4,16 +4,19 @@ namespace App\Controllers\Admin;
 use App\Controllers\Admin\BaseAdminController;
 use App\Models\UserProfileModel;
 use App\Models\WebSettingsModel;
+use CodeIgniter\Shield\Authentication\Passwords;
+use CodeIgniter\Shield\Models\UserModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class SettingsController extends BaseAdminController
 {
-    protected $settingsModel, $userProfileModel;
+    protected $settingsModel, $userProfileModel, $userModel;
 
     public function __construct()
     {
         $this->settingsModel = new WebSettingsModel();
         $this->userProfileModel = new UserProfileModel();
+        $this->userModel = new UserModel();
     }
 
     public function index(): string
@@ -97,6 +100,7 @@ class SettingsController extends BaseAdminController
 
     public function profile(): string
     {
+        $user = auth()->user();
         $profile = $this->userProfileModel->select('id, user_id, display_name, bio, about_heading, about_content, quote_text, social_links')
             ->where('user_id', auth()->id())
             ->first();
@@ -110,12 +114,54 @@ class SettingsController extends BaseAdminController
                 ['title' => 'Pengaturan', 'url' => url_to('settings')],
                 ['title' => 'Profil', 'url' => null],
             ],
-            'profile'          => $profile
+            'profile'          => $profile,
+            'accountUser'      => $user,
         ]);
     }
 
     public function updateProfile()
     {
+        $userId = (int) auth()->id();
+        $user = $this->userModel->findById($userId);
+
+        if ($user === null) {
+            return redirect()->route('settings_profile')->with('error', 'Akun tidak ditemukan.');
+        }
+
+        $username = trim((string) $this->request->getPost('username'));
+        $currentUsername = (string) ($user->username ?? '');
+        $newPassword = (string) $this->request->getPost('new_password');
+        $newPasswordConfirmation = (string) $this->request->getPost('new_password_confirmation');
+        $currentPassword = (string) $this->request->getPost('current_password');
+        $isUsernameChanged = $username !== $currentUsername;
+        $isPasswordChangeRequested = $newPassword !== '' || $newPasswordConfirmation !== '';
+        $isAccountChangeRequested = $isUsernameChanged || $isPasswordChangeRequested;
+
+        if ($isAccountChangeRequested) {
+            if ($currentPassword === '') {
+                return redirect()->route('settings_profile')->withInput()->with('warning', 'Masukkan password saat ini untuk mengubah username atau password.');
+            }
+
+            $passwordHash = $user->getPasswordHash();
+            if ($passwordHash === null || ! service('passwords')->verify($currentPassword, $passwordHash)) {
+                return redirect()->route('settings_profile')->withInput()->with('warning', 'Password saat ini tidak sesuai.');
+            }
+        }
+
+        $accountErrors = $this->validateAccountChanges(
+            $user,
+            $userId,
+            $username,
+            $newPassword,
+            $newPasswordConfirmation,
+            $isAccountChangeRequested,
+            $isPasswordChangeRequested
+        );
+
+        if ($accountErrors !== []) {
+            return redirect()->route('settings_profile')->withInput()->with('warning', reset($accountErrors));
+        }
+
         $data = [
             'display_name'  => $this->request->getPost('display_name'),
             'bio'           => $this->request->getPost('bio'),
@@ -134,11 +180,93 @@ class SettingsController extends BaseAdminController
 
         if (!$existing) {
             return redirect()->route('settings_profile')->with('error', 'Profil tidak ditemukan.');
-        } else {
-            $this->userProfileModel->update($existing['id'], $data);
         }
 
-        return redirect()->route('settings_profile')->with('success', 'Profil berhasil diperbarui.');
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            $this->userProfileModel->update($existing['id'], $data);
+
+            if ($isAccountChangeRequested) {
+                $user->username = $username;
+
+                if ($isPasswordChangeRequested) {
+                    $user->password = $newPassword;
+                }
+
+                $this->userModel->update($userId, $user);
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \RuntimeException('Transaksi database gagal.');
+            }
+        } catch (\Throwable $exception) {
+            $db->transRollback();
+            return redirect()->route('settings_profile')->withInput()->with('error', 'Gagal memperbarui profil. ' . $exception->getMessage());
+        }
+
+        $message = $isAccountChangeRequested
+            ? 'Profil dan akun berhasil diperbarui.'
+            : 'Profil berhasil diperbarui.';
+
+        return redirect()->route('settings_profile')->with('success', $message);
+    }
+
+    private function validateAccountChanges($user, int $userId, string $username, string $newPassword, string $newPasswordConfirmation, bool $isAccountChangeRequested, bool $isPasswordChangeRequested): array
+    {
+        if (!$isAccountChangeRequested) {
+            return [];
+        }
+
+        $rules = [
+            'username' => [
+                'rules' => "required|min_length[3]|max_length[30]|regex_match[/\A[a-zA-Z0-9\.]+\z/]|is_unique[users.username,id,{$userId}]",
+                'errors' => [
+                    'required'    => 'Username wajib diisi.',
+                    'min_length'  => 'Username minimal 3 karakter.',
+                    'max_length'  => 'Username maksimal 30 karakter.',
+                    'regex_match' => 'Username hanya boleh berisi huruf, angka, dan titik.',
+                    'is_unique'   => 'Username sudah digunakan.',
+                ],
+            ],
+        ];
+
+        if ($isPasswordChangeRequested) {
+            $rules['new_password'] = [
+                'rules' => 'required|' . Passwords::getMaxLengthRule() . '|matches[new_password_confirmation]',
+                'errors' => [
+                    'required'   => 'Password baru wajib diisi.',
+                    'max_byte'   => 'Password baru terlalu panjang.',
+                    'max_length' => 'Password baru terlalu panjang.',
+                    'matches'    => 'Konfirmasi password baru tidak cocok.',
+                ],
+            ];
+            $rules['new_password_confirmation'] = [
+                'rules' => 'required',
+                'errors' => [
+                    'required' => 'Konfirmasi password baru wajib diisi.',
+                ],
+            ];
+        }
+
+        if (!$this->validate($rules)) {
+            return $this->validator->getErrors();
+        }
+
+        if ($isPasswordChangeRequested) {
+            $passwordUser = clone $user;
+            $passwordUser->username = $username;
+            $passwordCheck = service('passwords')->check($newPassword, $passwordUser);
+
+            if (!$passwordCheck->isOK()) {
+                return ['new_password' => $passwordCheck->reason() ?? 'Password baru tidak memenuhi syarat.'];
+            }
+        }
+
+        return [];
     }
 
     public function updateProfileAvatar()
