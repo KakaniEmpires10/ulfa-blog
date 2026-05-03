@@ -2,7 +2,7 @@
     <div class="modal-background"></div>
 
     <div class="modal-card">
-        <form :action="tagData.id ? '<?= site_url('admin/tags') ?>/' + tagData.id : '<?= site_url('admin/tags') ?>'"
+        <form :action="tagData.id ? '<?= esc(url_to('tags_update', 0), 'js') ?>'.replace('/0', '/' + tagData.id) : '<?= url_to('tags_create') ?>'"
             method="POST"
             novalidate
             x-data="{ 

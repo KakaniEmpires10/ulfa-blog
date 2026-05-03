@@ -21,7 +21,7 @@
     <h2 class="script-label">Pengaturan Gambar Profil</h2>
     <p class="help mb-2">Gambar Profil anda yang akan muncul di seluruh aplikasi.</p>
 
-    <form action="<?= site_url('admin/settings/image-profile/update/avatar') ?>"
+    <form action="<?= url_to('settings_image_update_avatar') ?>"
         method="post"
         enctype="multipart/form-data"
         x-data="imageUploader({
@@ -126,7 +126,7 @@
     <h2 class="script-label">Pengaturan Gambar Cover</h2>
     <p class="help mb-2">Gambar Cover yang muncul dihalaman Tentang. <a href="<?= site_url('about') ?>" target="_blank" class="is-underlined">Lihat cover saat ini</a></p>
 
-    <form action="<?= site_url('admin/settings/image-profile/update/cover') ?>"
+    <form action="<?= url_to('settings_image_update_cover') ?>"
         method="post"
         enctype="multipart/form-data"
         x-data="imageUploader({

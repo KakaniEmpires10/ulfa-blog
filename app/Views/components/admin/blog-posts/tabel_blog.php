@@ -1,3 +1,9 @@
+<?php
+$postStatusUrlTemplate = url_to('posts_update_status', 0);
+$postEditUrlTemplate = url_to('posts_edit', 0);
+$postDeleteUrlTemplate = url_to('posts_delete', 0);
+?>
+
 <div class="table-container"
     x-data="fetchPosts({ endpoint: '<?= esc($postDataUrl, 'js') ?>' })"
     @apply-filter.window="filters = { ...$event.detail }; currentPage = 1; fetchData()">
@@ -122,13 +128,13 @@
                                 <div class="dropdown-menu" id="dropdown-menu" role="menu">
                                     <div class="dropdown-content" style="min-width: 120px;">
                                         <a href="javascript:void(0)" class="dropdown-item is-size-7"
-                                            @click.prevent="updateStatus(post.id, 'published', '<?= site_url('admin/posts') ?>/' + post.id + '/status')"
+                                            @click.prevent="updateStatus(post.id, 'published', '<?= esc($postStatusUrlTemplate, 'js') ?>'.replace('/0/status', '/' + post.id + '/status'))"
                                             :class="{'is-active': post.status === 'published'}">
                                             <span class="icon has-text-success"><i class="fas fa-check-circle"></i></span>
                                             Publish
                                         </a>
                                         <a href="javascript:void(0)" class="dropdown-item is-size-7"
-                                            @click.prevent="updateStatus(post.id, 'draft', '<?= site_url('admin/posts') ?>/' + post.id + '/status')"
+                                            @click.prevent="updateStatus(post.id, 'draft', '<?= esc($postStatusUrlTemplate, 'js') ?>'.replace('/0/status', '/' + post.id + '/status'))"
                                             :class="{'is-active': post.status === 'draft'}">
                                             <span class="icon has-text-warning"><i class="fas fa-edit"></i></span>
                                             Draft
@@ -152,7 +158,7 @@
                                     @mouseleave="$store.tooltip.hide()">
                                     <span class="icon is-small"><i class="fas fa-eye"></i></span>
                                 </a>
-                                <a :href="'<?= site_url('admin/posts/') ?>' + post.id + '/edit'"
+                                <a :href="'<?= esc($postEditUrlTemplate, 'js') ?>'.replace('/0/edit', '/' + post.id + '/edit')"
                                     class="button is-icon is-small is-primary"
                                     @mouseenter="$store.tooltip.show($el, 'Edit Post', 'top')"
                                     @mouseleave="$store.tooltip.hide()">
@@ -163,7 +169,7 @@
                                         title: 'Hapus Postingan',
                                         description: `Anda akan menghapus postingan '${post.title}'. Tindakan ini tidak dapat dibatalkan.`,
                                         deleteLabel: 'Ya, Hapus Post',
-                                        url: `<?= site_url('admin/posts/') ?>${post.id}`
+                                        url: '<?= esc($postDeleteUrlTemplate, 'js') ?>'.replace('/0', '/' + post.id)
                                     })"
                                     @mouseenter="$store.tooltip.show($el, 'Hapus Post', 'top')"
                                     @mouseleave="$store.tooltip.hide()">

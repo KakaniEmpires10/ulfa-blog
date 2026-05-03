@@ -28,12 +28,12 @@ class AdminPostController extends BaseAdminController
             'pageTitle'        => 'Manajemen Blog',
             'pageDescription'  => 'Halaman tag sudah tersedia. Pada tahap berikutnya kita bisa tambahkan list tag, pencarian, serta aksi tambah dan ubah.',
             'hasAction'        => true,
-            'actionUrl'        => site_url('/admin/posts/create'),
+            'actionUrl'        => url_to('posts_create'),
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
                 ['title' => 'Manajemen Blog', 'url' => null],
             ],
-            'postDataUrl'     => site_url('/admin/posts-data'),
+            'postDataUrl'     => url_to('posts_data'),
         ]);
     }
 
@@ -63,8 +63,8 @@ class AdminPostController extends BaseAdminController
             'pageTitle'        => 'Buat Postingan Baru',
             'pageDescription'  => 'Halaman untuk membuat postingan baru.',
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
-                ['title' => 'Manajemen Blog', 'url' => site_url('/admin/posts')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
+                ['title' => 'Manajemen Blog', 'url' => url_to('posts')],
                 ['title' => 'Buat Postingan Baru', 'url' => null],
             ],
             'categories'       => $this->categoryModel->findAll(),
@@ -111,7 +111,7 @@ class AdminPostController extends BaseAdminController
                 throw new \Exception('Transaksi database gagal.');
             }
 
-            return redirect()->to(site_url('admin/posts'))->with('success', 'Blog post berhasil diterbitkan!');
+            return redirect()->route('posts')->with('success', 'Blog post berhasil diterbitkan!');
         } catch (\Exception $e) {
             $db->transRollback();
             if (isset($fullPath) && file_exists(FCPATH . $fullPath)) unlink(FCPATH . $fullPath);
@@ -124,7 +124,7 @@ class AdminPostController extends BaseAdminController
         $post = $this->blogPostModel->getEditPost($id);
 
         if (!$post) {
-            return redirect()->to(site_url('/admin/posts'))->with('error', 'Postingan tidak ditemukan.');
+            return redirect()->route('posts')->with('error', 'Postingan tidak ditemukan.');
         }
 
         return $this->renderAdmin('pages/admin/blog-posts/form', [
@@ -132,8 +132,8 @@ class AdminPostController extends BaseAdminController
             'pageTitle'        => 'Edit Postingan',
             'pageDescription'  => 'Halaman untuk mengedit postingan.',
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
-                ['title' => 'Manajemen Blog', 'url' => site_url('/admin/posts')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
+                ['title' => 'Manajemen Blog', 'url' => url_to('posts')],
                 ['title' => 'Edit Postingan', 'url' => null],
             ],
             'post'             => $post,
@@ -204,7 +204,7 @@ class AdminPostController extends BaseAdminController
                 }
             }
 
-            return redirect()->to(site_url('admin/posts'))->with('success', 'Berita berhasil diperbarui!');
+            return redirect()->route('posts')->with('success', 'Berita berhasil diperbarui!');
         } catch (\Exception $e) {
             $db->transRollback();
 
@@ -261,10 +261,10 @@ class AdminPostController extends BaseAdminController
 
             $this->cleanupUnusedPostAssets($id, $postAssetPaths);
 
-            return redirect()->to(site_url('admin/posts'))->with('success', 'Postingan berhasil dihapus.');
+            return redirect()->route('posts')->with('success', 'Postingan berhasil dihapus.');
         } catch (\Exception $e) {
             $db->transRollback();
-            return redirect()->to(site_url('admin/posts'))->with('error', 'Gagal menghapus data: ' . $e->getMessage());
+            return redirect()->route('posts')->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
     }
 

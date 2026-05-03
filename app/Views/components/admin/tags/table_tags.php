@@ -1,3 +1,5 @@
+<?php $tagDeleteUrlTemplate = url_to('tags_delete', 0); ?>
+
 <div
     class="table-container"
     x-data="fetchTags({ endpoint: '<?= esc($tagsDataUrl, 'js') ?>' })"
@@ -62,7 +64,7 @@
                                     title: 'Hapus Tag',
                                     description: `Anda akan menghapus tag '${tag.name}'. Postingan dengan tag ini akan kehilangan referensinya.`,
                                     deleteLabel: 'Ya, Hapus Tag',
-                                    url: `<?= site_url('admin/tags') ?>/${tag.id}`
+                                    url: '<?= esc($tagDeleteUrlTemplate, 'js') ?>'.replace('/0', '/' + tag.id)
                                 })"
                                 @mouseenter="$store.tooltip.show($el, 'Hapus', 'top')"
                                 @mouseleave="$store.tooltip.hide()">

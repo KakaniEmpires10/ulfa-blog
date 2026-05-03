@@ -3,7 +3,7 @@
     :class="{ 'is-open': sidebarOpen, 'is-collapsed': sidebarCollapsed && !isMobile }">
     <div class="admin-sidebar-inner custom-scrollbar">
         <div class="admin-sidebar-header">
-            <a class="admin-brand" href="<?= site_url('/admin') ?>"
+            <a class="admin-brand" href="<?= url_to('dashboard') ?>"
                 @mouseenter="if(sidebarCollapsed && !isMobile) $store.tooltip.show($el, '<?= esc(get_setting('site_name', 'Ulfa Blog'), 'js') ?>', 'right', 'is-link')"
                 @mouseleave="$store.tooltip.hide()"
                 @focus="if(sidebarCollapsed && !isMobile) $store.tooltip.show($el, '<?= esc(get_setting('site_name', 'Ulfa Blog'), 'js') ?>', 'right', 'is-link')"

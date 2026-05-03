@@ -1,4 +1,4 @@
-<form class="is-flex is-flex-direction-column" style="gap: 1.5rem;" action="<?= site_url('admin/settings/profile') ?>" method="POST" x-data="{ isLoading: false }" @submit="isLoading = true">
+<form class="is-flex is-flex-direction-column" style="gap: 1.5rem;" action="<?= url_to('settings_profile_update') ?>" method="POST" x-data="{ isLoading: false }" @submit="isLoading = true">
     <?= csrf_field() ?>
 
     <div class="card-panel">

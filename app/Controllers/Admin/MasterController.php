@@ -25,10 +25,10 @@ class MasterController extends BaseAdminController
             'hasAction'        => true,
             'isActionModal'    => true,
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
                 ['title' => 'Master Tag', 'url' => null],
             ],
-            'tagsDataUrl'     => site_url('/admin/tags-data'),
+            'tagsDataUrl'     => url_to('tags_data'),
         ]);
     }
 
@@ -126,10 +126,10 @@ class MasterController extends BaseAdminController
             'hasAction'        => true,
             'isActionModal'    => true,
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
                 ['title' => 'Master Kategori', 'url' => null],
             ],
-            'categoriesDataUrl'     => site_url('/admin/categories-data'),
+            'categoriesDataUrl'     => url_to('categories_data'),
         ]);
     }
 

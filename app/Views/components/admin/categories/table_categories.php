@@ -1,3 +1,5 @@
+<?php $categoryDeleteUrlTemplate = url_to('categories_delete', 0); ?>
+
 <div
     class="table-container"
     x-data="fetchCategories({ endpoint: '<?= esc($categoriesDataUrl, 'js') ?>' })"
@@ -62,7 +64,7 @@
                                     title: 'Hapus Kategori',
                                     description: `Anda akan menghapus kategori '${category.name}'. Postingan dengan kategori ini akan kehilangan referensinya.`,
                                     deleteLabel: 'Ya, Hapus Kategori',
-                                    url: `<?= site_url('admin/categories') ?>/${category.id}`
+                                    url: '<?= esc($categoryDeleteUrlTemplate, 'js') ?>'.replace('/0', '/' + category.id)
                                 })"
                                 @mouseenter="$store.tooltip.show($el, 'Hapus', 'top')"
                                 @mouseleave="$store.tooltip.hide()">

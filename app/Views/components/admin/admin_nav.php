@@ -68,7 +68,7 @@
 
                     <hr class="dropdown-divider">
 
-                    <a href="<?= site_url('admin/settings/profile') ?>" class="dropdown-item">
+                    <a href="<?= url_to('settings_profile') ?>" class="dropdown-item">
                         <span class="icon-text">
                             <span class="icon is-small mt-1"><i class="fa-regular fa-circle-user"></i></span>
                             <span>Pengaturan Profil</span>
@@ -77,7 +77,7 @@
 
                     <hr class="dropdown-divider">
 
-                    <a href="<?= site_url('logout') ?>" class="dropdown-item has-text-danger">
+                    <a href="<?= url_to('logout') ?>" class="dropdown-item has-text-danger">
                         <span class="icon-text">
                             <span class="icon is-small mt-1"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>
                             <span>Keluar</span>

@@ -7,7 +7,7 @@ $selectedCategories = $isEdit
 $selectedTags = $isEdit
     ? array_column($post['tags'] ?? [], 'id')
     : [];
-$actionUrl = $isEdit ? site_url('admin/posts/' . $post['id']) : site_url('admin/posts');
+$actionUrl = $isEdit ? url_to('posts_update', $post['id']) : url_to('posts_store');
 $ckeditorThemeVersion = filemtime(FCPATH . 'assets/css/ckeditor-bulma.css');
 $ckeditorScriptVersion = filemtime(FCPATH . 'assets/js/adminPostEditor.js');
 $errors = session('errors') ?? [];
@@ -244,7 +244,7 @@ $publishedAtValue = old('published_at', $post['published_at'] ?? '');
 
     <div class="field is-grouped is-justify-content-flex-end my-4">
         <div class="control">
-            <a href="<?= site_url('admin/posts') ?>" class="button">Kembali</a>
+            <a href="<?= url_to('posts') ?>" class="button">Kembali</a>
         </div>
         <div class="control">
             <button class="button is-link" type="submit" :class="{ 'is-loading': isLoading }" :disabled="isLoading">
@@ -267,7 +267,7 @@ $publishedAtValue = old('published_at', $post['published_at'] ?? '');
     window.APP = window.APP || {};
     window.APP.blogPostEditor = {
         selector: '#editor',
-        uploadUrl: '<?= site_url('admin/upload/image') ?>',
+        uploadUrl: '<?= url_to('upload_image') ?>',
         csrfHeader: '<?= csrf_header() ?>',
         csrfToken: '<?= csrf_hash() ?>',
         csrfTokenName: '<?= csrf_token() ?>'

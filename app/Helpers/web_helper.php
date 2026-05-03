@@ -291,28 +291,28 @@ if (! function_exists('admin_nav_items')) {
             [
                 'label'       => 'Dashboard',
                 'path'        => 'admin',
-                'url'         => site_url('/admin'),
+                'url'         => url_to('dashboard'),
                 'icon'        => 'fa-solid fa-chart-pie',
                 'description' => 'Ringkasan cepat isi blog dan area kerja.',
             ],
             [
                 'label'       => 'Postingan',
                 'path'        => 'admin/posts',
-                'url'         => site_url('/admin/posts'),
+                'url'         => url_to('posts'),
                 'icon'        => 'fa-regular fa-newspaper',
                 'description' => 'Tempat mengelola draft dan tulisan terbit.',
             ],
             [
                 'label'       => 'Kategori',
                 'path'        => 'admin/categories',
-                'url'         => site_url('/admin/categories'),
+                'url'         => url_to('categories'),
                 'icon'        => 'fa-solid fa-folder-tree',
                 'description' => 'Susun kelompok topik agar konten tetap rapi.',
             ],
             [
                 'label'       => 'Tag',
                 'path'        => 'admin/tags',
-                'url'         => site_url('/admin/tags'),
+                'url'         => url_to('tags'),
                 'icon'        => 'fa-solid fa-tags',
                 'description' => 'Tambahkan penanda kecil untuk pencarian cepat.',
             ],
@@ -326,7 +326,7 @@ if (! function_exists('admin_nav_items')) {
             [
                 'label'       => 'Pengaturan',
                 'path'        => 'admin/settings',
-                'url'         => site_url('/admin/settings'),
+                'url'         => url_to('settings'),
                 'icon'        => 'fa-solid fa-sliders',
                 'description' => 'Atur tema, identitas, dan preferensi situs.',
             ]

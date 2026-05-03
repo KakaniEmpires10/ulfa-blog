@@ -2,7 +2,7 @@
     <div class="modal-background"></div>
 
     <div class="modal-card">
-        <form :action="categoryData.id ? '<?= site_url('admin/categories') ?>/' + categoryData.id : '<?= site_url('admin/categories') ?>'"
+        <form :action="categoryData.id ? '<?= esc(url_to('categories_update', 0), 'js') ?>'.replace('/0', '/' + categoryData.id) : '<?= url_to('categories_create') ?>'"
             method="POST"
             novalidate
             x-data="{ 

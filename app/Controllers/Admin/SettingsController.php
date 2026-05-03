@@ -23,7 +23,7 @@ class SettingsController extends BaseAdminController
             'pageTitle'        => 'Pengaturan',
             'pageDescription'  => 'Halaman pengaturan sudah siap. Langkah selanjutnya bisa fokus ke tema, identitas situs, dan preferensi tampilan publik.',
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
                 ['title' => 'Pengaturan', 'url' => null],
             ],
             'site_name'              => $this->settingsModel->getValue('site_name'),
@@ -87,8 +87,8 @@ class SettingsController extends BaseAdminController
             'pageTitle'        => 'Pengaturan Logo & Gambar Profil',
             'pageDescription'  => 'Halaman pengaturan sudah siap. Langkah selanjutnya bisa fokus ke tema, identitas situs, dan preferensi tampilan publik.',
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
-                ['title' => 'Pengaturan', 'url' => site_url('/admin/settings')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
+                ['title' => 'Pengaturan', 'url' => url_to('settings')],
                 ['title' => 'Logo & Gambar Profil', 'url' => null],
             ],
             'data'             => $data
@@ -106,8 +106,8 @@ class SettingsController extends BaseAdminController
             'pageTitle'        => 'Pengaturan Profil',
             'pageDescription'  => 'Halaman pengaturan sudah siap. Langkah selanjutnya bisa fokus ke tema, identitas situs, dan preferensi tampilan publik.',
             'breadcrumbs'      => [
-                ['title' => 'Dashboard', 'url' => site_url('/admin')],
-                ['title' => 'Pengaturan', 'url' => site_url('/admin/settings')],
+                ['title' => 'Dashboard', 'url' => url_to('dashboard')],
+                ['title' => 'Pengaturan', 'url' => url_to('settings')],
                 ['title' => 'Profil', 'url' => null],
             ],
             'profile'          => $profile
@@ -278,7 +278,7 @@ class SettingsController extends BaseAdminController
      */
     private function respondWithRedirect(string $type, string $message): ResponseInterface
     {
-        $redirectUrl = site_url('admin/settings/image-profile');
+        $redirectUrl = url_to('settings_image');
 
         // Set flash session seperti biasa (untuk halaman yang di-load ulang)
         session()->setFlashdata($type, $message);

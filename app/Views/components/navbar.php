@@ -26,7 +26,7 @@
                     <a class="navbar-item <?= nav_is_active('about') ? 'has-text-primary' : '' ?>" href="<?= site_url('/about') ?>">Tentang</a>
                     <a class="navbar-item <?= nav_is_active('contact') ? 'has-text-primary' : '' ?>" href="<?= site_url('/contact') ?>">Kontak</a>
                     <?php if (auth()->loggedIn()) : ?>
-                        <a class="navbar-item" href="<?= site_url('/admin') ?>">Dashboard</a>
+                        <a class="navbar-item" href="<?= url_to('dashboard') ?>">Dashboard</a>
                         <div class="navbar-item">
                             <a class="button is-primary is-rounded" href="<?= url_to('logout') ?>">Keluar</a>
                         </div>
