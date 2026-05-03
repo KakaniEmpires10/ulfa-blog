@@ -19,7 +19,7 @@
                     <?php if (session('error') !== null) : ?>
                         <?= view('components/notification', [
                             'variant' => 'danger',
-                            'title'   => 'Masuk belum berhasil',
+                            'title'   => 'Gagal Masuk',
                             'message' => session('error'),
                             'icon'    => 'fa-solid fa-circle-exclamation',
                         ]) ?>
@@ -41,7 +41,26 @@
                         ]) ?>
                     <?php endif ?>
 
-                    <form action="<?= url_to('login') ?>" method="post" class="validate-form" novalidate>
+                    <form
+                        action="<?= url_to('login') ?>"
+                        method="post"
+                        class="validate-form"
+                        novalidate
+                        x-data="{ 
+                            isLoading: false,
+                            handleSubmit(event) {
+                                if (!event.currentTarget.checkValidity()) {
+                                    event.preventDefault();
+                                    this.isLoading = false;
+                                    event.currentTarget.reportValidity();
+                                    return;
+                                }
+
+                                this.isLoading = true;
+                            }
+                        }"
+                        @submit="handleSubmit($event)">
+
                         <?= csrf_field() ?>
 
                         <div class="field">
@@ -67,7 +86,11 @@
                             </label>
                         <?php endif; ?>
 
-                        <button type="submit" class="button is-primary is-fullwidth is-rounded login-submit" data-loading-text="Memproses masuk...">
+                        <button
+                            type="submit"
+                            class="button is-primary is-fullwidth is-rounded"
+                            :class="{ 'is-loading': isLoading }"
+                            :disabled="isLoading">
                             <span>Masuk</span>
                             <span class="icon" aria-hidden="true">
                                 <i class="fa-solid fa-arrow-right-to-bracket"></i>

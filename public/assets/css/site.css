@@ -929,20 +929,6 @@ a:not(.button):not(.button *):not(.tabs *):hover {
   justify-content: flex-end;
 }
 
-.contact-submit,
-.login-submit {
-  align-items: center;
-  display: inline-flex;
-  gap: 0.55rem;
-  justify-content: center;
-  white-space: nowrap;
-}
-
-.contact-submit .icon,
-.login-submit .icon {
-  margin-left: 0;
-}
-
 .material-notification {
   align-items: center;
   background: var(--bulma-scheme-main);
@@ -1224,7 +1210,8 @@ button.is-submitting .icon i {
 .remember-box {
   display: inline-flex;
   gap: 0.55rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
 }
 
 .clear-category-link {
