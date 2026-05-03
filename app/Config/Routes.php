@@ -9,8 +9,6 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('about', 'AboutController::index');
-$routes->get('contact', 'ContactController::index');
-$routes->post('contact', 'ContactController::send');
 $routes->get('post/(:segment)', 'PostController::show/$1');
 
 $routes->group('admin', [
@@ -19,7 +17,7 @@ $routes->group('admin', [
 ], static function ($routes) {
     $routes->get('/', 'DashboardController::index', ['as' => 'dashboard']);
     $routes->get('dashboard-data', 'DashboardController::data');
-    $routes->get('media', 'PageController::media');
+    // $routes->get('media', 'PageController::media');
 
     // upload image form rich text editor
     $routes->post('upload/image', 'AdminPostController::uploadImage', ['as' => 'upload_image']);
