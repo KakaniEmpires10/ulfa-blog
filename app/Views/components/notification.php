@@ -1,7 +1,7 @@
 <?php
 $variant = $variant ?? 'info';
 $icon    = $icon ?? null;
-$title   = $title ?? null;
+$label   = $label ?? null;
 $message = $message ?? null;
 $messages = $messages ?? [];
 
@@ -31,8 +31,8 @@ $variantClass = match ($variant) {
     <?php endif; ?>
 
     <div class="notification-content">
-        <?php if ($title !== null && $title !== '') : ?>
-            <p class="notification-title"><?= esc($title) ?></p>
+        <?php if ($label !== null && $label !== '') : ?>
+            <p class="notification-title"><?= esc($label) ?></p>
         <?php endif; ?>
 
         <?php if (count($messages) === 1) : ?>

@@ -57,7 +57,7 @@
                 <?php if (session('error')) : ?>
                     <?= view('components/notification', [
                         'variant' => 'danger',
-                        'title'   => 'Gagal',
+                        'label'   => 'Gagal',
                         'message' => session('error'),
                         'icon'    => 'fa-solid fa-circle-exclamation',
                     ]) ?>
@@ -66,7 +66,7 @@
                 <?php if (session('warning')) : ?>
                     <?= view('components/notification', [
                         'variant' => 'warning',
-                        'title'   => 'Peringatan',
+                        'label'   => 'Peringatan',
                         'message' => session('warning'),
                         'icon'    => 'fa-solid fa-circle-exclamation',
                     ]) ?>
@@ -75,7 +75,7 @@
                 <?php if (session('success')) : ?>
                     <?= view('components/notification', [
                         'variant' => 'success',
-                        'title'   => 'Berhasil',
+                        'label'   => 'Berhasil',
                         'message' => session('success'),
                         'icon'    => 'fa-solid fa-circle-check',
                     ]) ?>

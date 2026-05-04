@@ -43,7 +43,7 @@ $publishedAtValue = old('published_at', $post['published_at'] ?? '');
 
     <?= view('components/notification', [
         'variant'  => 'warning',
-        'title'    => 'Periksa kembali data postingan',
+        'label'    => 'Periksa kembali data postingan',
         'messages' => $errors,
         'icon'     => 'fa-solid fa-triangle-exclamation',
     ]) ?>
